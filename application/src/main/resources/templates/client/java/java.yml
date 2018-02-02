@@ -1,0 +1,7 @@
+type: Client
+name: JavaClient
+description: this is the template generator class for a java client
+files: 
+  - name: AbstractClient
+    template: abstractclient.vm
+    mode: once

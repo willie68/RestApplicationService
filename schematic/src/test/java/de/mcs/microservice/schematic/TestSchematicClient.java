@@ -26,6 +26,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import de.mcs.microservice.application.query.SimpleQuery;
+import de.mcs.microservice.schematic.client.Connection;
 import de.mcs.microservice.schematic.client.SchematicClient;
 import de.mcs.microservice.utils.JacksonUtils;
 import de.mcs.utils.Files;
@@ -41,8 +42,8 @@ public class TestSchematicClient {
 
   @Before
   public void before() throws KeyManagementException, NoSuchAlgorithmException {
-    client = new SchematicClient("https://127.0.0.1:8443", "wkla", "w.klaas@gmx.de", "akteon00",
-        "cce0ef23-c0bf-4a25-b871-1219f482d863");
+    client = new SchematicClient(Connection.BASE_URL, Connection.TENANT, "w.klaas@gmx.de", "akteon00",
+        Connection.APIKEY);
   }
 
   @Test(expected = NotFoundException.class)

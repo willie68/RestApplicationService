@@ -34,6 +34,7 @@ import de.mcs.microservice.application.resources.CustomAuthFilter;
 import de.mcs.microservice.application.resources.CustomAuthenticator;
 import de.mcs.microservice.application.resources.DataModelResource;
 import de.mcs.microservice.application.resources.InfoResource;
+import de.mcs.microservice.application.resources.RootResource;
 import de.mcs.microservice.application.resources.ServiceResource;
 import de.mcs.microservice.application.storage.ConfigStorage;
 import io.dropwizard.Application;
@@ -236,6 +237,7 @@ public abstract class RestApplicationService<T extends AppServiceConfig> extends
     environment.jersey().register(DataModelResource.class);
     environment.jersey().register(ServiceResource.class);
     environment.jersey().register(ConfigResource.class);
+    environment.jersey().register(RootResource.class);
   }
 
   private void initConfigStorage() {

@@ -5,3 +5,9 @@ data
 application/report\.html
 
 application/testdata/My App Schematic\.postman_collection\.json
+
+schematic/My App Schematic\.postman_collection\.json
+
+schematic/blob\.pdf
+
+*.merge

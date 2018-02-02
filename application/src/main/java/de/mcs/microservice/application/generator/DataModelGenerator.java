@@ -47,8 +47,13 @@ public class DataModelGenerator {
     overwrite, merge, none
   }
 
+  enum MODE {
+    server, client
+  }
+
   private ObjectMapper ymlMapper;
   private GeneratorUtility utility;
+  private MODE mode;
   private static File srcRootPath;
 
   public static void main(String[] args) throws Exception {
@@ -59,13 +64,22 @@ public class DataModelGenerator {
     if (!dataFile.exists()) {
       throw new FileNotFoundException(String.format("dataFile \"%s\" not found", dataFile.getAbsolutePath()));
     }
+    MODE mode = MODE.valueOf(args[1]);
+    if (!MODE.server.equals(mode)) {
+      throw new Exception("client model generation not implemented yet.");
 
+    }
     srcRootPath = new File("src/generated/java");
-    if (args.length > 1) {
-      srcRootPath = new File(args[1]);
+    if (args.length > 2) {
+      srcRootPath = new File(args[2]);
     }
     DataModelGenerator generator = new DataModelGenerator();
+    generator.setMode(mode);
     generator.start(dataFile);
+  }
+
+  private void setMode(MODE mode) {
+    this.mode = mode;
   }
 
   public DataModelGenerator() throws IOException {
@@ -94,17 +108,8 @@ public class DataModelGenerator {
   }
 
   public void processFile(File ymlFile, HashMap value) throws Exception {
-    // File templateFile = new File("src/main/resources/templates",
-    // String.format("%s.vm", value.get("type")));
-    // if (!templateFile.exists()) {
-    // throw new FileNotFoundException(String.format("templateFile \"%s\" not
-    // found", templateFile.getAbsolutePath()));
-    // }
-    // Template template = Velocity.getTemplate("templates/" +
-    // templateFile.getName());
-
     String templateName = String.format("%s.vm", value.get("type"));
-    Template template = Velocity.getTemplate("templates/" + templateName);
+    Template template = Velocity.getTemplate(String.format("templates/%s/%s", mode.name(), templateName));
 
     String modeStr = (String) value.getOrDefault("mode", "merge");
     OVERWRITE_MODE mode = OVERWRITE_MODE.valueOf(modeStr);
