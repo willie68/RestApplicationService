@@ -1,0 +1,7 @@
+type: DataStorage
+mode: merge
+name: SchematicStorage
+modelName: SchematicDataModel
+moduleName: SchematicModule
+description: this is the data storage for the schematic files
+package: de.mcs.microservice.schematic

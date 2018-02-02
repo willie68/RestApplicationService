@@ -1,0 +1,16 @@
+type: DataModel
+mode: overwrite
+name: AttachmentDataModel
+moduleName: SchematicModule
+description: this is the data model for the attachment files
+hooks: AttachmentDataModelHooks
+package: de.mcs.microservice.schematic
+storage: de.mcs.microservice.application.storage.NitriteDataStorage
+hide: true
+fields:
+  - name: attachmentName
+    description: name of the attachment
+    type: String
+  - name: path
+    description: path of the attachment
+    type: String

@@ -1,0 +1,14 @@
+## module.vm
+package $class.package;
+
+import de.mcs.microservice.application.annotations.Module;
+import de.mcs.microservice.application.core.model.RestModule;
+
+/**
+ * @author wklaa_000
+ *
+ */
+@Module(name = "$class.name", description = "$class.description")
+public class $class.name implements RestModule {
+
+}

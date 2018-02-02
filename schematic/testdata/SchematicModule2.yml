@@ -1,0 +1,5 @@
+type: Module
+mode: overwrite
+name: SchematicModule2
+description: this is the main module for the schematic files
+package: de.mcs.microservice.schematic

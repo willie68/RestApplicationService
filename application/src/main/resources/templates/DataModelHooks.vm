@@ -1,0 +1,72 @@
+## module
+package $class.package;
+
+import java.util.*;
+import de.mcs.microservice.application.core.AbstractRestDataModelHooks;
+import de.mcs.microservice.application.core.model.Context;
+import de.mcs.microservice.application.core.model.RestDataModelHooks;
+import ${class.package}.${class.modelName};
+
+public class $class.name extends AbstractRestDataModelHooks<$class.modelName>
+    implements RestDataModelHooks<$class.modelName> {
+
+  @Override
+  public $class.modelName beforeCreate($class.modelName dataModel, Context context) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public $class.modelName afterCreate($class.modelName dataModel, Context context) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String beforeRead(String id, Context context) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public $class.modelName afterRead($class.modelName dataModel, Context context) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public $class.modelName beforeUpdate($class.modelName dataModel, Context context) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public $class.modelName afterUpdate($class.modelName dataModel, Context context) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String beforeDelete(String id, Context context) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public $class.modelName afterDelete($class.modelName dataModel, Context context) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String beforeFind(String query, Context context) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public List<$class.modelName> afterFind(String query, List<$class.modelName> list, Context context) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+}

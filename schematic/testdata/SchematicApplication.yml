@@ -1,0 +1,10 @@
+type: Application
+mode: overwrite
+name: SchematicApplication
+description: this is the data storage for the schematic files
+package: de.mcs.microservice.schematic
+tenantType: MULTI_TENANT
+usedModules: 
+  - SchematicModule
+  - SchematicModule2
+authClass: SchematicAuthenticator

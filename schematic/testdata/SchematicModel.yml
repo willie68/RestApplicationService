@@ -1,0 +1,31 @@
+type: DataModel
+mode: overwrite
+name: SchematicDataModel
+moduleName: SchematicModule
+description: this is the data model for the schematic files
+hooks: SchematicDataModelHooks
+package: de.mcs.microservice.schematic
+storage: de.mcs.microservice.application.storage.NitriteDataStorage
+hide: false
+fields:
+  - name: schematicName
+    description: name of the schematic file
+    type: String
+    index: true
+    fulltext: true
+  - name: tags
+    description: tags of the schematic file
+    type: List<String>
+    index: true
+    fulltext: true
+  - name: filename
+    description: filename of the schematic file
+    type: String
+    index: true
+    fulltext: true
+  - name: file
+    description: the file object
+    type: BlobDescription
+    index: false
+    fulltext: false
+    

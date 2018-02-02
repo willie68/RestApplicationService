@@ -1,0 +1,6 @@
+type: RestResource
+mode: merge
+name: SchematicResource
+moduleName: SchematicModule
+description: this is the data model for the schematic files
+package: de.mcs.microservice.schematic

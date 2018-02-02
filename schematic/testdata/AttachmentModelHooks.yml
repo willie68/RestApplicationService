@@ -1,0 +1,7 @@
+type: DataModelHooks
+mode: merge
+name: AttachmentDataModelHooks
+modelName: AttachmentDataModel
+moduleName: SchematicModule
+description: this are the hooks for the data model for the schematic files
+package: de.mcs.microservice.schematic

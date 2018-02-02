@@ -1,0 +1,42 @@
+## class.vm
+package $class.package;
+
+import java.util.*;
+import de.mcs.microservice.application.core.AbstractDataStorage;
+import de.mcs.microservice.application.core.model.Context;
+import de.mcs.microservice.application.core.model.DataStorage;
+import ${class.package}.${class.modelName};
+
+public class $class.name extends AbstractDataStorage<$class.modelName> implements DataStorage<$class.modelName> {
+
+  @Override
+  public String create($class.modelName model, Context context) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public $class.modelName read(String id, Context context) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public boolean update($class.modelName model, Context context) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public $class.modelName delete(String id, Context context) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public List<$class.modelName> find(String query, Context context) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+}

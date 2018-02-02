@@ -1,0 +1,41 @@
+## class.vm
+package $class.package;
+
+import java.util.*;
+import de.mcs.microservice.application.annotations.DataModel;
+import de.mcs.microservice.application.annotations.Index;
+import de.mcs.microservice.application.api.BlobDescription;
+import de.mcs.microservice.application.core.model.RestDataModel;
+import de.mcs.microservice.application.core.AbstractRestDataModel;
+
+
+@DataModel(name = "$class.name", description = "$class.description", moduleName = "$class.moduleName"
+#if (${class.hide})  , visible = false #end 
+#if (${class.hooks})  , dataHooks = ${class.package}.${class.hooks}.class #end 
+#if (${class.storage})  , dataStorage = ${class.storage}.class #end 
+)
+public class $class.name extends AbstractRestDataModel implements RestDataModel {
+
+  @Override
+  public String getModuleName() {
+    return "$class.moduleName";
+  }
+  
+  @Override
+  public String getModelName() {
+    return "$class.name";
+  }
+  
+#foreach($att in $class.fields)
+
+#if (${att.index})  @Index(name = "$att.name", type = "$att.type" #if ($att.fulltext) , fulltext = true#end ) 
+#end	
+  public $att.type get$utility.firstToUpperCase($att.name)() {
+    return ($att.type) this.any().get("$att.name");
+  }
+  
+  public void set$utility.firstToUpperCase($att.name)($att.type $att.name) {
+    this.setValue("$att.name", $att.name);
+  }
+#end
+}

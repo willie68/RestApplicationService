@@ -1,0 +1,13 @@
+## class.vm
+package $class.package;
+
+import de.mcs.microservice.application.annotations.Application;
+import de.mcs.microservice.application.annotations.Application.TenantType;
+import de.mcs.microservice.application.core.model.RestApplication;
+
+@Application(name = "$class.name", description = "$class.description", tenantType = TenantType.$class.tenantType, 
+  usedModules = { #foreach($module in $class.usedModules) "$module", #end }, 
+  authClass = ${class.authClass}.class)
+public class $class.name  implements RestApplication {
+
+}

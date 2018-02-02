@@ -1,0 +1,22 @@
+## restresource.vm
+package $class.package;
+
+import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Response;
+
+import de.mcs.microservice.application.annotations.RestResource;
+import de.mcs.microservice.application.core.AbstractRestResource;
+
+@RestResource(moduleName = "$class.moduleName", description = "$class.description")
+public class $class.name extends AbstractRestResource {
+
+  @Path("/info")
+  @GET
+  @RolesAllowed({ "admin", "appadmin" })
+  public Response info() {
+    return Response.ok(String.format("Service working. %s#%s", getAppName(), getModuleName())).build();
+  }
+
+}
