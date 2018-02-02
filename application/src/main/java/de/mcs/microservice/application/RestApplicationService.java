@@ -208,6 +208,12 @@ public abstract class RestApplicationService<T extends AppServiceConfig> extends
     addingStaticResources(environment);
 
     addingRestApplicationResources(environment);
+
+    addingBaseHealthCheck(environment);
+  }
+
+  private void addingBaseHealthCheck(Environment environment) {
+    environment.healthChecks().register("base", new BaseHealthCheck());
   }
 
   private void addingRestApplicationResources(Environment environment) throws ClassNotFoundException {
@@ -230,10 +236,7 @@ public abstract class RestApplicationService<T extends AppServiceConfig> extends
     CustomAuthFilter filter = new CustomAuthFilter(new CustomAuthenticator());
     environment.jersey().register(new AuthDynamicFeature(filter));
 
-    // final InfoResource infoResource = new InfoResource();
     environment.jersey().register(InfoResource.class);
-
-    // final DataModelResource dataModelResource = new DataModelResource();
     environment.jersey().register(DataModelResource.class);
     environment.jersey().register(ServiceResource.class);
     environment.jersey().register(ConfigResource.class);

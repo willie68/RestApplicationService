@@ -55,8 +55,7 @@ import de.mcs.microservice.application.query.Tokenizer.Token;
 import de.mcs.microservice.utils.JacksonUtils;
 import de.mcs.utils.StreamHelper;
 
-public class NitriteDataStorage<T extends RestDataModel> extends AbstractDataStorage<T>
-    implements DataStorage<T> {
+public class NitriteDataStorage<T extends RestDataModel> extends AbstractDataStorage<T> implements DataStorage<T> {
 
   public static final String KEY_STORAGE_PATH = "storagePath";
   public static final String KEY_STORAGE_USER = "user";
@@ -116,13 +115,13 @@ public class NitriteDataStorage<T extends RestDataModel> extends AbstractDataSto
     }
     storageDb.mkdirs();
 
-    // File lucenePath = new File(storageDb, String.format("%s_lucene", appName));
-    // lucenePath.mkdirs();
-    // .textIndexingService(new LuceneService(lucenePath))
+    File lucenePath = new File(storageDb, String.format("%s_lucene", appName));
+    lucenePath.mkdirs();
 
     File storageDbFile = new File(storageDb, String.format("data.db", appName));
 
-    Nitrite db = Nitrite.builder().filePath(storageDbFile).openOrCreate(dbUser, dbPassword);
+    Nitrite db = Nitrite.builder().filePath(storageDbFile).textIndexingService(new LuceneService(lucenePath))
+        .openOrCreate(dbUser, dbPassword);
     db.compact();
     createDefaultIndexes(db);
     createFulltextIndexes(db);

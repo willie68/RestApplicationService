@@ -84,45 +84,13 @@ public class LuceneService implements TextIndexingService {
           .withFieldVisibility(JsonAutoDetect.Visibility.ANY).withGetterVisibility(JsonAutoDetect.Visibility.NONE)
           .withIsGetterVisibility(JsonAutoDetect.Visibility.NONE));
 
-      indexDirectory = new MMapDirectory(baseDir.toPath());
-      analyzer = new StandardAnalyzer();
-
-      IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
-      iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-      indexWriter = new IndexWriter(indexDirectory, iwc);
       scheduledExecutor = Executors.newScheduledThreadPool(3);
 
-      commitFuture = scheduledExecutor.scheduleWithFixedDelay(() -> {
-        try {
-          if (indexWriter != null) {
-            System.out.println("lucene commit.");
-            indexWriter.commit();
-          }
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }, 10, 10, TimeUnit.SECONDS);
-
-      compactFuture = scheduledExecutor.scheduleWithFixedDelay(() -> {
-        try {
-          if (indexWriter != null) {
-            System.out.println("lucene maybeMerge.");
-            indexWriter.maybeMerge();
-          }
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }, 1, 1, TimeUnit.MINUTES);
+      drop();
 
       searcherManager = new SearcherManager(indexWriter, true, true, null);
-      maybeRefreshFuture = scheduledExecutor.scheduleWithFixedDelay(() -> {
-        try {
-          System.out.println("lucene maybeRefresh.");
-          searcherManager.maybeRefresh();
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }, 0, 5, TimeUnit.SECONDS);
+
+      startBackgroundTasks();
     } catch (IOException e) {
       throw new IndexingException(errorMessage("could not create full-text index", 0), e);
     } catch (VirtualMachineError vme) {
@@ -132,14 +100,50 @@ public class LuceneService implements TextIndexingService {
     }
   }
 
+  /**
+   * 
+   */
+  private void startBackgroundTasks() {
+    commitFuture = scheduledExecutor.scheduleWithFixedDelay(() -> {
+      try {
+        if (indexWriter != null) {
+          // System.out.println("lucene commit.");
+          indexWriter.commit();
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }, 10, 10, TimeUnit.SECONDS);
+
+    compactFuture = scheduledExecutor.scheduleWithFixedDelay(() -> {
+      try {
+        if (indexWriter != null) {
+          // System.out.println("lucene maybeMerge.");
+          indexWriter.maybeMerge();
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }, 1, 1, TimeUnit.MINUTES);
+
+    maybeRefreshFuture = scheduledExecutor.scheduleWithFixedDelay(() -> {
+      try {
+        // System.out.println("lucene maybeRefresh.");
+        searcherManager.maybeRefresh();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }, 0, 5, TimeUnit.SECONDS);
+  }
+
   @Override
   public void createIndex(NitriteId id, String field, String text) {
     Monitor monitor = MeasureFactory.start(this, "createIndex");
     try {
       Document document = new Document();
       String jsonId = keySerializer.writeValueAsString(id);
-      Field contentField = new TextField(field, text, Field.Store.NO);
       Field idField = new StringField(CONTENT_ID, jsonId, Field.Store.YES);
+      Field contentField = new Field(field, text, TextField.TYPE_STORED);
 
       document.add(idField);
       document.add(contentField);
@@ -165,8 +169,7 @@ public class LuceneService implements TextIndexingService {
         Field idField = new StringField(CONTENT_ID, jsonId, Field.Store.YES);
         document.add(idField);
       }
-      Field contentField = new TextField(field, text, Field.Store.YES);
-
+      Field contentField = new Field(field, text, TextField.TYPE_STORED);
       document.add(contentField);
 
       Monitor update = MeasureFactory.start(this, "updateDocument");
@@ -231,7 +234,8 @@ public class LuceneService implements TextIndexingService {
       parser.setAllowLeadingWildcard(true);
       Query query = parser.parse(searchString + "*");
 
-      searcherManager.maybeRefreshBlocking();
+      searcherManager.maybeRefresh();
+
       IndexSearcher indexSearcher = searcherManager.acquire();
       TopScoreDocCollector collector = TopScoreDocCollector.create(MAX_SEARCH);
       indexSearcher.search(query, collector);
@@ -292,13 +296,38 @@ public class LuceneService implements TextIndexingService {
 
   @Override
   public void drop() {
+    close();
     try {
       indexDirectory = new MMapDirectory(baseDir.toPath());
       analyzer = new StandardAnalyzer();
-
       IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
       iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
       indexWriter = new IndexWriter(indexDirectory, iwc);
+
+      startBackgroundTasks();
+    } catch (IOException e) {
+      throw new IndexingException(errorMessage("could not drop full-text index", 0), e);
+    }
+  }
+
+  /**
+   * 
+   */
+  public void close() {
+    try {
+      if (indexWriter != null) {
+        indexWriter.commit();
+        indexWriter.close();
+        indexWriter = null;
+      }
+      if (analyzer != null) {
+        analyzer.close();
+        analyzer = null;
+      }
+      if (indexDirectory != null) {
+        indexDirectory.close();
+        indexDirectory = null;
+      }
     } catch (IOException e) {
       throw new IndexingException(errorMessage("could not drop full-text index", 0), e);
     }

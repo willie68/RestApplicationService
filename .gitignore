@@ -1,6 +1,7 @@
 target
 bin
 data
+tmp
 
 application/report\.html
 
