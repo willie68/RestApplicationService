@@ -1,3 +1,7 @@
 target
 bin
 data
+
+application/report\.html
+
+application/testdata/My App Schematic\.postman_collection\.json
