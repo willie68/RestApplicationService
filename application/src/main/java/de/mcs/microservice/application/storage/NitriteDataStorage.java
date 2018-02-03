@@ -25,6 +25,7 @@ import org.dizitart.no2.Filter;
 import org.dizitart.no2.IndexOptions;
 import org.dizitart.no2.IndexType;
 import org.dizitart.no2.Nitrite;
+import org.dizitart.no2.NitriteBuilder;
 import org.dizitart.no2.NitriteCollection;
 import org.dizitart.no2.WriteResult;
 import org.dizitart.no2.filters.Filters;
@@ -60,6 +61,7 @@ public class NitriteDataStorage<T extends RestDataModel> extends AbstractDataSto
   public static final String KEY_STORAGE_PATH = "storagePath";
   public static final String KEY_STORAGE_USER = "user";
   public static final String KEY_STORAGE_PASSWORD = "password";
+  public static final String KEY_STORAGE_LUCENE = "useLucene";
 
   private static Map<String, Nitrite> databases = new HashMap<>();
   private static final String FIELD_DATA = "data";
@@ -79,6 +81,7 @@ public class NitriteDataStorage<T extends RestDataModel> extends AbstractDataSto
   private boolean initialised = false;
   private String dbUser;
   private String dbPassword;
+  private boolean useLucene;
 
   public NitriteDataStorage() {
   }
@@ -89,6 +92,7 @@ public class NitriteDataStorage<T extends RestDataModel> extends AbstractDataSto
     String storageDbStr = (String) config.any().getOrDefault(KEY_STORAGE_PATH, "storage");
     dbUser = (String) config.any().getOrDefault(KEY_STORAGE_USER, "appUser");
     dbPassword = (String) config.any().getOrDefault(KEY_STORAGE_PASSWORD, "f7jMA6OxoL");
+    useLucene = (boolean) config.any().getOrDefault(KEY_STORAGE_LUCENE, false);
 
     String appName = appConfig.getName();
     if (baseStorage == null) {
@@ -120,8 +124,11 @@ public class NitriteDataStorage<T extends RestDataModel> extends AbstractDataSto
 
     File storageDbFile = new File(storageDb, String.format("data.db", appName));
 
-    Nitrite db = Nitrite.builder().filePath(storageDbFile).textIndexingService(new LuceneService(lucenePath))
-        .openOrCreate(dbUser, dbPassword);
+    NitriteBuilder builder = Nitrite.builder().filePath(storageDbFile);
+    if (useLucene) {
+      builder = builder.textIndexingService(new LuceneService(lucenePath));
+    }
+    Nitrite db = builder.openOrCreate(dbUser, dbPassword);
     db.compact();
     createDefaultIndexes(db);
     createFulltextIndexes(db);

@@ -32,3 +32,4 @@ internalDatastore:
   password: f7jMA6OxoL
   storageClass: de.mcs.microservice.application.storage.NitriteStorage
   storagePath: data/storage/
+  useLucene: false

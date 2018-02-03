@@ -24,6 +24,7 @@ import static org.dizitart.no2.util.StringUtils.isNullOrEmpty;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -38,6 +39,7 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -144,9 +146,13 @@ public class LuceneService implements TextIndexingService {
       String jsonId = keySerializer.writeValueAsString(id);
       Field idField = new StringField(CONTENT_ID, jsonId, Field.Store.YES);
       Field contentField = new Field(field, text, TextField.TYPE_STORED);
-
       document.add(idField);
       document.add(contentField);
+
+      System.out.println("creating index entry with");
+      document.getFields().stream().forEach(f -> {
+        System.out.printf("%s: %s\r\n", f.name(), f.stringValue());
+      });
 
       indexWriter.addDocument(document);
     } catch (IOException ioe) {
@@ -163,14 +169,34 @@ public class LuceneService implements TextIndexingService {
     Monitor monitor = MeasureFactory.start(this, "updateIndex");
     try {
       String jsonId = keySerializer.writeValueAsString(id);
-      Document document = getDocument(jsonId);
-      if (document == null) {
-        document = new Document();
-        Field idField = new StringField(CONTENT_ID, jsonId, Field.Store.YES);
-        document.add(idField);
+      Document document = new Document();
+      Field idField = new StringField(CONTENT_ID, jsonId, Field.Store.YES);
+      document.add(idField);
+      Document storeDocument = getDocument(jsonId);
+      if (storeDocument != null) {
+        List<IndexableField> fields = storeDocument.getFields();
+        for (IndexableField orgField : fields) {
+          if (CONTENT_ID.equals(orgField.name())) {
+            continue;
+          }
+          if (field.equals(orgField.name())) {
+            continue;
+          }
+          Field contentField = new Field(orgField.name(), orgField.stringValue(), TextField.TYPE_STORED);
+          document.add(contentField);
+        }
+      } else {
+        System.out.println("new doc");
       }
+
       Field contentField = new Field(field, text, TextField.TYPE_STORED);
       document.add(contentField);
+
+      System.out.println("updating index entry with");
+      document.getFields().stream().forEach(f -> {
+        System.out.printf("%s: %s\r\n", f.name(), f.stringValue());
+      });
+      System.out.println();
 
       Monitor update = MeasureFactory.start(this, "updateDocument");
       try {

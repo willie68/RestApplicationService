@@ -131,7 +131,7 @@ public class TestSchematicClient {
     Thread.sleep(1000);
 
     SimpleQuery simpleQuery = new SimpleQuery();
-    simpleQuery.set("filename", schematicDataModel.getFilename());
+    simpleQuery.set("schematicName", schematicDataModel.getSchematicName());
     String query = JacksonUtils.getJsonMapper().writeValueAsString(simpleQuery);
 
     List<SchematicDataModel> models = client.find(query);
@@ -143,7 +143,7 @@ public class TestSchematicClient {
     assertEquals(newModel.getSchematicName(), models.get(0).getSchematicName());
 
     simpleQuery = new SimpleQuery();
-    simpleQuery.set("schematicName", schematicDataModel.getSchematicName());
+    simpleQuery.set("filename", schematicDataModel.getFilename());
     query = JacksonUtils.getJsonMapper().writeValueAsString(simpleQuery);
 
     models = client.find(query);
