@@ -25,7 +25,7 @@ import de.mcs.microservice.application.api.MeasureDataFactory;
  * @author wklaa_000
  */
 @Singleton
-@Path("service")
+@Path("")
 public class ServiceResource {
 
   /**

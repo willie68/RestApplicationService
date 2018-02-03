@@ -6,6 +6,7 @@ package de.mcs.microservice.application.resources;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
@@ -39,6 +40,18 @@ public class ConfigResource {
    */
   public ConfigResource() {
     super();
+  }
+
+  /**
+   * @return a the application configuration
+   */
+  @GET
+  @Path("apps")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Set<String> getApplications() {
+    RestApplicationService<?> instance = RestApplicationService.getInstance();
+    Map<String, ApplicationConfig> installedApps = instance.getInstalledApps();
+    return installedApps.keySet();
   }
 
   /**

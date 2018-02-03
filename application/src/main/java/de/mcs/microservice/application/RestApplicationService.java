@@ -17,6 +17,7 @@ import java.util.UUID;
 import javax.ws.rs.Path;
 
 import org.apache.commons.lang.StringUtils;
+import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,12 +35,14 @@ import de.mcs.microservice.application.resources.CustomAuthFilter;
 import de.mcs.microservice.application.resources.CustomAuthenticator;
 import de.mcs.microservice.application.resources.DataModelResource;
 import de.mcs.microservice.application.resources.InfoResource;
-import de.mcs.microservice.application.resources.RootResource;
 import de.mcs.microservice.application.resources.ServiceResource;
 import de.mcs.microservice.application.storage.ConfigStorage;
 import io.dropwizard.Application;
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.forms.MultiPartBundle;
+import io.dropwizard.jersey.DropwizardResourceConfig;
+import io.dropwizard.jersey.setup.JerseyContainerHolder;
+import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
@@ -205,11 +208,27 @@ public abstract class RestApplicationService<T extends AppServiceConfig> extends
 
     outputRestApplication();
 
+    addingAdminResources(environment);
+
     addingStaticResources(environment);
 
     addingRestApplicationResources(environment);
 
     addingBaseHealthCheck(environment);
+  }
+
+  private void addingAdminResources(Environment environment) {
+    // Admin Pages
+    // ============
+    final DropwizardResourceConfig jerseyConfig = new DropwizardResourceConfig(environment.metrics());
+    JerseyContainerHolder jerseyContainerHolder = new JerseyContainerHolder(new ServletContainer(jerseyConfig));
+    JerseyEnvironment jerseyEnvironment = new JerseyEnvironment(jerseyContainerHolder, jerseyConfig);
+
+    // jerseyEnvironment.register(RootResource.class);
+    jerseyEnvironment.register(ServiceResource.class);
+    jerseyEnvironment.register(new ConfigResource());
+    environment.admin().addServlet("admin jersey resources", jerseyContainerHolder.getContainer())
+        .addMapping("/service/*");
   }
 
   private void addingBaseHealthCheck(Environment environment) {
@@ -238,9 +257,6 @@ public abstract class RestApplicationService<T extends AppServiceConfig> extends
 
     environment.jersey().register(InfoResource.class);
     environment.jersey().register(DataModelResource.class);
-    environment.jersey().register(ServiceResource.class);
-    environment.jersey().register(ConfigResource.class);
-    environment.jersey().register(RootResource.class);
   }
 
   private void initConfigStorage() {
