@@ -1,0 +1,7 @@
+type: ServiceConfig
+mode: merge
+name: MyServiceConfig
+description: this is the configuration class of the service
+package: de.mcs.microservice.schematic
+vendor: MCS
+creationYear: 2018

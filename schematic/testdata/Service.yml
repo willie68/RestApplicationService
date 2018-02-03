@@ -1,0 +1,9 @@
+type: Service
+mode: merge
+name: MyService
+configName: MyServiceConfig
+serviceName: MCSSchematicApplication
+description: this is the data storage for the schematic files
+package: de.mcs.microservice.schematic
+vendor: MCS
+creationYear: 2018
