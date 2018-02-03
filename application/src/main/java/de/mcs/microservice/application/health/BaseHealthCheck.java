@@ -1,4 +1,4 @@
-package de.mcs.microservice.application;
+package de.mcs.microservice.application.health;
 
 import java.util.Map;
 
@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.health.HealthCheck;
 
+import de.mcs.microservice.application.RestApplicationService;
 import de.mcs.microservice.application.core.model.ApplicationConfig;
 import de.mcs.microservice.application.storage.ConfigStorage;
 

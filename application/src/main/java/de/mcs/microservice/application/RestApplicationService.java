@@ -1,10 +1,4 @@
 package de.mcs.microservice.application;
-/**
- * EASY MICROSERVICE PLATFORM
- * Copyright (c) EASY SOFTWARE AG 2014 - 2015
- * All rights reserved
- * Project: config-service
- */
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -30,6 +24,7 @@ import de.mcs.microservice.application.core.model.DataModelConfig;
 import de.mcs.microservice.application.core.model.FieldConfig;
 import de.mcs.microservice.application.core.model.ModuleConfig;
 import de.mcs.microservice.application.core.model.RestResourceConfig;
+import de.mcs.microservice.application.health.BaseHealthCheck;
 import de.mcs.microservice.application.resources.ConfigResource;
 import de.mcs.microservice.application.resources.CustomAuthFilter;
 import de.mcs.microservice.application.resources.CustomAuthenticator;
@@ -47,7 +42,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
 /**
- * Service class for Service-Registry-Server
+ * Abstract base class for the RestApplicationService
  * 
  * @author w.klaas
  *
@@ -218,13 +213,10 @@ public abstract class RestApplicationService<T extends AppServiceConfig> extends
   }
 
   private void addingAdminResources(Environment environment) {
-    // Admin Pages
-    // ============
     final DropwizardResourceConfig jerseyConfig = new DropwizardResourceConfig(environment.metrics());
     JerseyContainerHolder jerseyContainerHolder = new JerseyContainerHolder(new ServletContainer(jerseyConfig));
     JerseyEnvironment jerseyEnvironment = new JerseyEnvironment(jerseyContainerHolder, jerseyConfig);
 
-    // jerseyEnvironment.register(RootResource.class);
     jerseyEnvironment.register(ServiceResource.class);
     jerseyEnvironment.register(new ConfigResource());
     environment.admin().addServlet("admin jersey resources", jerseyContainerHolder.getContainer())
