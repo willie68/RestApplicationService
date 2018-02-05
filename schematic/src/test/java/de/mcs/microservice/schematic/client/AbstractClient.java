@@ -13,7 +13,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
@@ -50,10 +49,6 @@ public class AbstractClient {
     client = ClientBuilder.newBuilder().hostnameVerifier(new TrustAllHostNameVerifier()).sslContext(ctx).build();
     client.register(MultiPartFeature.class);
 
-  }
-
-  WebTarget getWebTarget(String baseUrl) {
-    return client.target(baseUrl).path("/rest/v1/apps/");
   }
 
 }

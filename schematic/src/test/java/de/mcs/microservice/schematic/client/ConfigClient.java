@@ -26,34 +26,39 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 
+import de.mcs.microservice.application.api.BaseModel;
 import de.mcs.microservice.application.api.BlobDescription;
-import de.mcs.microservice.application.client.BasicAuthenticator;
 import de.mcs.microservice.schematic.SchematicDataModel;
 
 /**
  * @author w.klaas
  *
  */
-public class SchematicClient extends AbstractClient {
+public class ConfigClient extends AbstractClient {
 
   private String apikey;
   private String tenant;
 
   private WebTarget schematicWebTarget;
 
-  public SchematicClient(String baseUrl, String tenant, String username, String password, String apikey)
-      throws NoSuchAlgorithmException, KeyManagementException {
+  public ConfigClient(String baseUrl) throws NoSuchAlgorithmException, KeyManagementException {
     super();
-    client.register(new BasicAuthenticator(username, password));
+    // client.register(new BasicAuthenticator(username, password));
 
     WebTarget webTarget = getWebTarget(baseUrl);
-    schematicWebTarget = webTarget.path("SchematicApplication/module/SchematicModule/model/SchematicDataModel/");
-    this.apikey = apikey;
-    this.tenant = tenant;
+    schematicWebTarget = webTarget.path("/service/config/apps/");
   }
 
   WebTarget getWebTarget(String baseUrl) {
-    return client.target(baseUrl).path("/rest/v1/apps/");
+    return client.target(baseUrl);
+  }
+
+  public List<String> getAppNames() {
+    return addHeader(schematicWebTarget.request(MediaType.APPLICATION_JSON)).get(List.class);
+  }
+
+  public BaseModel getApp(String appName) {
+    return addHeader(schematicWebTarget.path(appName).request(MediaType.APPLICATION_JSON)).get(BaseModel.class);
   }
 
   public SchematicDataModel get(String id) {
@@ -145,4 +150,5 @@ public class SchematicClient extends AbstractClient {
     }
     return null;
   }
+
 }

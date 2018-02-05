@@ -61,6 +61,7 @@ public class DataModelGenerator {
   private static File srcRootPath;
 
   public static void main(String[] args) throws Exception {
+    System.out.println("starting generator");
     File dataFile = new File("testdata"); // , "SchematicModel.yml");
     if (args.length > 0) {
       dataFile = new File(args[0]);
@@ -80,6 +81,7 @@ public class DataModelGenerator {
     DataModelGenerator generator = new DataModelGenerator();
     generator.setMode(mode);
     generator.start(dataFile);
+    System.out.println("generator finished");
   }
 
   private void setMode(MODE mode) {
@@ -123,7 +125,6 @@ public class DataModelGenerator {
       if ((object != null) && (object instanceof List)) {
         List<Map> datamodels = (List<Map>) object;
         for (Map datamodel : datamodels) {
-          System.out.println(datamodel);
           datamodel.put(PACKAGE_KEY, value.get(PACKAGE_KEY));
           datamodel.put("moduleName", value.get("name"));
           processFile(ymlFile, datamodel);

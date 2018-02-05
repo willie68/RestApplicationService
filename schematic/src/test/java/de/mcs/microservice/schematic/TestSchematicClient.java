@@ -5,6 +5,7 @@ package de.mcs.microservice.schematic;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -25,7 +26,9 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import de.mcs.microservice.application.api.BaseModel;
 import de.mcs.microservice.application.query.SimpleQuery;
+import de.mcs.microservice.schematic.client.ConfigClient;
 import de.mcs.microservice.schematic.client.Connection;
 import de.mcs.microservice.schematic.client.SchematicClient;
 import de.mcs.microservice.utils.JacksonUtils;
@@ -39,11 +42,19 @@ import de.mcs.utils.StreamHelper;
 public class TestSchematicClient {
 
   private SchematicClient client;
+  private ConfigClient configClient;
 
   @Before
   public void before() throws KeyManagementException, NoSuchAlgorithmException {
-    client = new SchematicClient(Connection.BASE_URL, Connection.TENANT, "w.klaas@gmx.de", "akteon00",
-        Connection.APIKEY);
+    configClient = new ConfigClient("https://127.0.0.1:8444");
+    List<String> appNames = configClient.getAppNames();
+    for (String appName : appNames) {
+      System.out.println(appName);
+    }
+    assertTrue(appNames.contains("SchematicApplication"));
+    BaseModel appConfig = configClient.getApp("SchematicApplication");
+    String apikey = appConfig.getFieldValueAsString("apikey");
+    client = new SchematicClient(Connection.BASE_URL, Connection.TENANT, "w.klaas@gmx.de", "akteon00", apikey);
   }
 
   @Test(expected = NotFoundException.class)
