@@ -27,6 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +45,8 @@ import de.mcs.microservice.utils.JacksonUtils;
  *
  */
 public class DataModelGenerator {
+  private static final String PACKAGE_KEY = "package";
+
   enum OVERWRITE_MODE {
     overwrite, merge, none
   }
@@ -107,8 +111,40 @@ public class DataModelGenerator {
     }
   }
 
-  public void processFile(File ymlFile, HashMap value) throws Exception {
-    String templateName = String.format("%s.vm", value.get("type"));
+  public void processFile(File ymlFile, Map value) throws Exception {
+    String type = (String) value.get("type");
+    if (StringUtils.isEmpty(type)) {
+      throw new Exception("type should not be null or empty");
+    }
+
+    // checking for in-file datamodels
+    if (type.equals("Module")) {
+      Object object = value.get("datamodels");
+      if ((object != null) && (object instanceof List)) {
+        List<Map> datamodels = (List<Map>) object;
+        for (Map datamodel : datamodels) {
+          System.out.println(datamodel);
+          datamodel.put(PACKAGE_KEY, value.get(PACKAGE_KEY));
+          datamodel.put("moduleName", value.get("name"));
+          processFile(ymlFile, datamodel);
+        }
+      }
+    }
+
+    // checking for in-file datamodelhooks
+    if (type.equals("DataModel")) {
+      Object object = value.get("datamodelhooks");
+      if ((object != null) && (object instanceof Map)) {
+        Map datamodelhooks = (Map) object;
+        datamodelhooks.put(PACKAGE_KEY, value.get(PACKAGE_KEY));
+        datamodelhooks.put("moduleName", value.get("moduleName"));
+        datamodelhooks.put("modelName", value.get("name"));
+        processFile(ymlFile, datamodelhooks);
+        value.put("hooks", datamodelhooks.get("name"));
+      }
+    }
+
+    String templateName = String.format("%s.vm", type);
     Template template = Velocity.getTemplate(String.format("templates/%s/%s", mode.name(), templateName));
 
     String modeStr = (String) value.getOrDefault("mode", "merge");
@@ -120,7 +156,7 @@ public class DataModelGenerator {
     context.put("class", value);
     context.put("utility", utility);
 
-    String packageStr = (String) value.get("package");
+    String packageStr = (String) value.get(PACKAGE_KEY);
     if (StringUtils.isEmpty(packageStr)) {
       throw new Exception(String.format("package must be given. File: \"%s\"", ymlFile.getName()));
     }
