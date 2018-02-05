@@ -17,8 +17,10 @@ import org.slf4j.LoggerFactory;
 
 import de.mcs.jmeasurement.MeasureFactory;
 import de.mcs.microservice.application.annotations.DynamicPath;
+import de.mcs.microservice.application.api.ServerAPI;
 import de.mcs.microservice.application.core.AbstractRestResource;
 import de.mcs.microservice.application.core.AnnotationScanner;
+import de.mcs.microservice.application.core.impl.RestServerApi;
 import de.mcs.microservice.application.core.model.ApplicationConfig;
 import de.mcs.microservice.application.core.model.DataModelConfig;
 import de.mcs.microservice.application.core.model.FieldConfig;
@@ -52,6 +54,7 @@ public abstract class RestApplicationService<T extends AppServiceConfig> extends
   private Logger log;
   private Map<String, ApplicationConfig> applications;
   private T configuration;
+  private ServerAPI serverApi;
 
   private static RestApplicationService<?> instance;
 
@@ -210,6 +213,12 @@ public abstract class RestApplicationService<T extends AppServiceConfig> extends
     addingRestApplicationResources(environment);
 
     addingBaseHealthCheck(environment);
+
+    createServerAPI();
+  }
+
+  private void createServerAPI() {
+    serverApi = new RestServerApi();
   }
 
   private void addingAdminResources(Environment environment) {
@@ -314,6 +323,13 @@ public abstract class RestApplicationService<T extends AppServiceConfig> extends
    */
   public ConfigStorage getConfigStorage() {
     return configStorage;
+  }
+
+  /**
+   * @return the serverApi
+   */
+  public static ServerAPI getServerApi() {
+    return getInstance().serverApi;
   }
 
 }

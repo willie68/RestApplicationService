@@ -13,7 +13,7 @@ datamodels:
       mode: merge
       name: SchematicDataModel2Hooks
       description: this are the hooks for the data model for the schematic files
-    storage: de.mcs.microservice.application.storage.NitriteDataStorage
+    storage: 
     hide: false
     fields:
       - name: schematicName

@@ -1,17 +1,22 @@
 package de.mcs.microservice.schematic;
 
-import java.util.*;
+import java.io.FileNotFoundException;
+import java.util.List;
+
+import de.mcs.microservice.application.api.LogLevel;
+import de.mcs.microservice.application.api.ServerAPI;
 import de.mcs.microservice.application.core.AbstractRestDataModelHooks;
 import de.mcs.microservice.application.core.model.Context;
 import de.mcs.microservice.application.core.model.RestDataModelHooks;
-import de.mcs.microservice.schematic.SchematicDataModel;
 
 public class SchematicDataModelHooks extends AbstractRestDataModelHooks<SchematicDataModel>
     implements RestDataModelHooks<SchematicDataModel> {
 
   @Override
   public SchematicDataModel beforeCreate(SchematicDataModel dataModel, Context context) {
-    // TODO Auto-generated method stub
+    ServerAPI serverApi = MyService.getServerApi();
+    serverApi.log(LogLevel.INFO, context, "before create: this is a log message.");
+    serverApi.logError(LogLevel.ERROR, context, "this is a log message.", new FileNotFoundException("file not found"));
     return null;
   }
 
