@@ -10,6 +10,4 @@ package de.mcs.microservice.schematic.client;
 public class Connection {
   public static final String BASE_URL = "https://127.0.0.1:8443";
   public static final String TENANT = "wkla";
-  // public static final String APIKEY = "925d3388-e072-497e-ba42-f6cf4ede082c";
-  public static final String APIKEY = "cce0ef23-c0bf-4a25-b871-1219f482d863";
 }

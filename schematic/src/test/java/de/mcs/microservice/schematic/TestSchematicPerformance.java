@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -24,6 +25,9 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.mcs.microservice.application.api.BaseModel;
+import de.mcs.microservice.schematic.client.ConfigClient;
+import de.mcs.microservice.schematic.client.Connection;
 import de.mcs.microservice.schematic.client.SchematicClient;
 import de.mcs.utils.Files;
 import de.mcs.utils.StreamHelper;
@@ -38,11 +42,17 @@ public class TestSchematicPerformance {
   private SchematicClient client;
   private ThreadPoolExecutor executor;
   private File tmp;
+  private ConfigClient configClient;
 
   @Before
   public void before() throws KeyManagementException, NoSuchAlgorithmException, IOException {
-    client = new SchematicClient("https://127.0.0.1:8443", "wkla", "w.klaas@gmx.de", "akteon00",
-        "cce0ef23-c0bf-4a25-b871-1219f482d863");
+    configClient = new ConfigClient("https://127.0.0.1:8444");
+    List<String> appNames = configClient.getAppNames();
+    assertTrue(appNames.contains("SchematicApplication"));
+    BaseModel appConfig = configClient.getApp("SchematicApplication");
+    String apikey = appConfig.getFieldValueAsString("apikey");
+
+    client = new SchematicClient(Connection.BASE_URL, Connection.TENANT, "w.klaas@gmx.de", "akteon00", apikey);
     executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
     tmp = new File("tmp");
     if (tmp.exists()) {

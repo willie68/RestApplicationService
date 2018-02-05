@@ -48,9 +48,6 @@ public class TestSchematicClient {
   public void before() throws KeyManagementException, NoSuchAlgorithmException {
     configClient = new ConfigClient("https://127.0.0.1:8444");
     List<String> appNames = configClient.getAppNames();
-    for (String appName : appNames) {
-      System.out.println(appName);
-    }
     assertTrue(appNames.contains("SchematicApplication"));
     BaseModel appConfig = configClient.getApp("SchematicApplication");
     String apikey = appConfig.getFieldValueAsString("apikey");
