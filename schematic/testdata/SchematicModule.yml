@@ -3,3 +3,102 @@ mode: overwrite
 name: SchematicModule
 description: this is the main module for the schematic files
 package: de.mcs.microservice.schematic
+datamodels:
+  - type: DataModel
+    mode: overwrite
+    name: Schematic
+    description: this is the data model for the schematic files
+    datamodelhooks: 
+      type: DataModelHooks
+      mode: merge
+      name: SchematicHooks
+      description: this are the hooks for the data model for the schematic files
+    storage: de.mcs.microservice.application.storage.NitriteDataStorage 
+    hide: false
+    fields:
+      - name: schematicName
+        description: name of the schematic file
+        type: String
+        index: true
+        fulltext: true
+      - name: tags
+        description: tags of the schematic file
+        type: List<String>
+        index: true
+        fulltext: true
+      - name: filename
+        description: filename of the schematic file
+        type: String
+        index: true
+        fulltext: true
+      - name: file
+        description: the file object
+        type: BlobDescription
+        index: false
+        fulltext: false
+      - name: buildIn
+        description:
+        type: Date
+        index: true
+        fulltext: false
+      - name: buildTo
+        description:
+        type: Date
+        index: true
+        fulltext: false
+      - name: model
+        description: the model name of the schematic
+        type: String
+        index: true
+        fulltext: true
+      - name: manufacturer
+        description: the manufacturer name of the schematic
+        type: String
+        index: true
+        fulltext: true
+      - name: privateFile
+        description: the schematic is private
+        type: boolean
+        index: true
+        fulltext: false
+      - name: subtitle
+        description: subtitle of the schematic
+        type: String
+        index: true
+        fulltext: true
+  - type: DataModel
+    mode: overwrite
+    name: SchematicTags
+    description: tagging system for schematic files
+    datamodelhooks: 
+    storage: de.mcs.microservice.application.storage.NitriteDataStorage
+    hide: false
+    fields:
+      - name: tag
+        description: name of tag
+        type: String
+        index: true
+        fulltext: false
+      - name: description
+        description: description of the tag
+        type: String
+        index: true
+        fulltext: true
+  - type: DataModel
+    mode: overwrite
+    name: Manufacturer
+    description: holds the manufacturer of a schematic file
+    datamodelhooks: 
+    storage: de.mcs.microservice.application.storage.NitriteDataStorage
+    hide: false
+    fields:
+      - name: manufacturerName
+        description: name of manufacturer
+        type: String
+        index: true
+        fulltext: false
+      - name: description
+        description: description of the manufacturer
+        type: String
+        index: true
+        fulltext: true

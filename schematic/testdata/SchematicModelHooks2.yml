@@ -1,7 +1,7 @@
 type: DataModelHooks
 mode: merge
-name: SchematicDataModelHooks
-modelName: SchematicDataModel
-moduleName: SchematicModule
+name: SchematicDataModelHooks2
+modelName: SchematicDataModel2
+moduleName: SchematicModule2
 description: this are the hooks for the data model for the schematic files
 package: de.mcs.microservice.schematic

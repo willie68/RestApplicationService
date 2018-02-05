@@ -86,12 +86,12 @@ public class TestSchematicPerformance {
   }
 
   private void testModel(int i) throws IOException {
-    SchematicDataModel schematicDataModel = new SchematicDataModel();
-    schematicDataModel.setFilename("filename" + Integer.toString(i));
-    schematicDataModel.setSchematicName("schematicName" + Integer.toString(i));
-    schematicDataModel.setTags(Arrays.asList(new String[] { "tube", "amp", "count" + Integer.toString(i) }));
+    Schematic schematic = new Schematic();
+    schematic.setFilename("filename" + Integer.toString(i));
+    schematic.setSchematicName("schematicName" + Integer.toString(i));
+    schematic.setTags(Arrays.asList(new String[] { "tube", "amp", "count" + Integer.toString(i) }));
 
-    SchematicDataModel newModel = client.post(schematicDataModel);
+    Schematic newModel = client.post(schematic);
     assertNotNull(newModel);
     System.out.printf("%d: id:%s\r\n", i, newModel.getId());
 

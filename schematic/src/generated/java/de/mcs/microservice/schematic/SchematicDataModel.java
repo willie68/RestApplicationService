@@ -9,7 +9,7 @@ import de.mcs.microservice.application.core.AbstractRestDataModel;
 
 
 @DataModel(name = "SchematicDataModel", description = "this is the data model for the schematic files", moduleName = "SchematicModule"
-  , dataHooks = de.mcs.microservice.schematic.SchematicDataModelHooks.class   , dataStorage = de.mcs.microservice.application.storage.NitriteDataStorage.class )
+  , dataHooks = de.mcs.microservice.schematic.SchematicDataModelHooks.class )
 public class SchematicDataModel extends AbstractRestDataModel implements RestDataModel {
 
   @Override

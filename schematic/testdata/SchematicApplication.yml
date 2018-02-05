@@ -6,5 +6,4 @@ package: de.mcs.microservice.schematic
 tenantType: MULTI_TENANT
 usedModules: 
   - SchematicModule
-  - SchematicModule2
 authClass: SchematicAuthenticator

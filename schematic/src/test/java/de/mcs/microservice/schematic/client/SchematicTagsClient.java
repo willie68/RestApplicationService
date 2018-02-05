@@ -1,3 +1,6 @@
+/**
+ * 
+ */
 package de.mcs.microservice.schematic.client;
 
 import java.io.File;
@@ -8,126 +11,49 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.ProcessingException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import de.mcs.microservice.application.api.BlobDescription;
-import de.mcs.microservice.application.core.model.RestDataModel;
+import de.mcs.microservice.application.client.BasicAuthenticator;
+import de.mcs.microservice.schematic.Schematic;
+import de.mcs.microservice.schematic.SchematicTags;
 import de.mcs.microservice.utils.JacksonUtils;
 
-public class AbstractClient<T extends RestDataModel> {
+/**
+ * @author w.klaas
+ *
+ */
+public class SchematicTagsClient extends AbstractClient<SchematicTags> {
 
-  public static TrustManager[] certs = new TrustManager[] { new X509TrustManager() {
-    @Override
-    public X509Certificate[] getAcceptedIssuers() {
-      return null;
-    }
-
-    @Override
-    public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-    }
-
-    @Override
-    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-    }
-  } };
-
-  public static class TrustAllHostNameVerifier implements HostnameVerifier {
-
-    public boolean verify(String hostname, SSLSession session) {
-      return true;
-    }
-
-  }
-
-  Client client;
-  private String baseUrl;
-  private String apikey;
-  private String tenant;
-  private Class<T> dataclass;
-
-  AbstractClient(String baseUrl, String tenant, String apikey, Class<T> dataclass)
+  public SchematicTagsClient(String baseUrl, String tenant, String username, String password, String apikey)
       throws NoSuchAlgorithmException, KeyManagementException {
-    SSLContext ctx = SSLContext.getInstance("SSL");
-    ctx.init(null, certs, new SecureRandom());
+    super(baseUrl, tenant, apikey, SchematicTags.class);
+    client.register(new BasicAuthenticator(username, password));
 
-    client = ClientBuilder.newBuilder().hostnameVerifier(new TrustAllHostNameVerifier()).sslContext(ctx).build();
-    client.register(MultiPartFeature.class);
-
-    this.baseUrl = baseUrl;
-    this.apikey = apikey;
-    this.tenant = tenant;
-    this.dataclass = dataclass;
+    setWebTarget(getBaseWebTarget().path("SchematicApplication/module/SchematicModule/model/Schematic/"));
   }
 
-  public WebTarget getBaseWebTarget() {
-    return client.target(baseUrl).path("/rest/v1/apps/");
-  }
-
-  private WebTarget webTarget;
-
-  /**
-   * @return the webTarget
-   */
-  public WebTarget getWebTarget() {
-    return webTarget;
-  }
-
-  /**
-   * @param webTarget
-   *          the webTarget to set
-   */
-  public void setWebTarget(WebTarget webTarget) {
-    this.webTarget = webTarget;
-  }
-
-  public Builder addHeader(Builder builder) {
-    builder = builder.header("X-mcs-apikey", apikey);
-    if (StringUtils.isNotEmpty(tenant)) {
-      builder = builder.header("X-mcs-tenant", tenant);
-    }
-    return builder;
-  }
-
-  public T get(String id) {
-    return addHeader(getWebTarget().path(id).request(MediaType.APPLICATION_JSON)).get(dataclass);
-  }
-
-  public T delete(String id) {
-    return addHeader(getWebTarget().path(id).request(MediaType.APPLICATION_JSON)).delete(dataclass);
-  }
-
-  public T post(T model) {
+  public Schematic post(Schematic schematic) {
+    String id = null;
     try {
-      String json = JacksonUtils.getJsonMapper().writeValueAsString(model);
+      String json = JacksonUtils.getJsonMapper().writeValueAsString(schematic);
       Response response = addHeader(getWebTarget().request(MediaType.APPLICATION_JSON))
           .post(Entity.entity(json, MediaType.APPLICATION_JSON));
       if (response.getStatus() == 201) {
-        return response.readEntity(dataclass);
+        return response.readEntity(Schematic.class);
       } else {
         String readEntity = response.readEntity(String.class);
         System.out.println(response.getStatusInfo());
@@ -140,13 +66,14 @@ public class AbstractClient<T extends RestDataModel> {
     return null;
   }
 
-  public T put(T model) {
+  public Schematic put(Schematic model) {
+    String id = null;
     try {
       String json = JacksonUtils.getJsonMapper().writeValueAsString(model);
       Response response = addHeader(getWebTarget().path(model.getId()).request(MediaType.APPLICATION_JSON))
           .put(Entity.entity(json, MediaType.APPLICATION_JSON));
       if (response.getStatus() == 200) {
-        T entity = response.readEntity(dataclass);
+        Schematic entity = response.readEntity(Schematic.class);
         return entity;
       } else {
         String readEntity = response.readEntity(String.class);
@@ -161,7 +88,8 @@ public class AbstractClient<T extends RestDataModel> {
     return null;
   }
 
-  public T postBlob(T model, String fieldname, File file, Map<String, Object> properties) {
+  public Schematic postBlob(Schematic model, String fieldname, File file, Map<String, Object> properties) {
+    String id = null;
     try (InputStream in = new FileInputStream(file)) {
       FormDataMultiPart multiPartEntity = new FormDataMultiPart().field("file", in,
           MediaType.APPLICATION_OCTET_STREAM_TYPE);
@@ -176,7 +104,7 @@ public class AbstractClient<T extends RestDataModel> {
       Response response = builder.post(Entity.entity(multiPartEntity, multiPartEntity.getMediaType()));
       if (response.getStatus() == 201) {
         BlobDescription entity = response.readEntity(BlobDescription.class);
-        model.set(fieldname, entity);
+        model.setFile(entity);
         return put(model);
       } else {
         throw new ProcessingException("model not updated.");
@@ -187,18 +115,18 @@ public class AbstractClient<T extends RestDataModel> {
     return null;
   }
 
-  public InputStream getBlob(T model, String fieldname) {
+  public InputStream getBlob(Schematic model, String fieldname) {
     return addHeader(getWebTarget().path(model.getId()).path(fieldname).request(MediaType.APPLICATION_OCTET_STREAM))
         .get(InputStream.class);
   }
 
-  public List<T> find(String query) {
+  public List<Schematic> find(String query) {
     try {
       String queryURL;
       queryURL = URLEncoder.encode(query, "UTF-8");
-      List<T> models = addHeader(getWebTarget().queryParam("q", queryURL).request(MediaType.APPLICATION_JSON))
-          .get(List.class);
-      return models;
+      Schematic[] schematic = addHeader(getWebTarget().queryParam("q", queryURL).request(MediaType.APPLICATION_JSON))
+          .get(Schematic[].class);
+      return Arrays.asList(schematic);
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     }

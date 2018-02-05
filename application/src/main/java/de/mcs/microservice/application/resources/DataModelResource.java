@@ -54,7 +54,6 @@ import de.mcs.microservice.application.core.model.ModuleConfig;
 import de.mcs.microservice.application.core.model.RestDataModel;
 import de.mcs.microservice.application.core.model.RestDataModelHooks;
 import de.mcs.microservice.application.storage.NitriteDataStorage;
-import de.mcs.microservice.application.storage.NitriteDataStorage;
 import de.mcs.microservice.utils.JacksonUtils;
 import de.mcs.utils.StreamHelper;
 
@@ -95,12 +94,13 @@ public class DataModelResource {
   @Path("/")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public List<RestDataModel> getAll(@QueryParam("q") String query) {
+  public Response getAll(@QueryParam("q") String query) {
     checkApplication(true);
 
     try {
       List<RestDataModel> myModels = doBackendFind(query, buildContext());
-      return myModels;
+      String json = JacksonUtils.getJsonMapper().writeValueAsString(myModels);
+      return Response.status(Status.OK).entity(json).build();
     } catch (WebApplicationException e) {
       throw e;
     } catch (Exception e) {
@@ -149,7 +149,8 @@ public class DataModelResource {
       RestDataModel myModel = convertDynamicModelIntoDataModelClass(model, dataModelConfig.getClassName());
 
       myModel = doBackendCreate(myModel, buildContext());
-      return Response.ok(myModel).status(Status.CREATED).build();
+      String json = JacksonUtils.getJsonMapper().writeValueAsString(myModel);
+      return Response.status(Status.CREATED).entity(json).build();
     } catch (WebApplicationException e) {
       throw e;
     } catch (Exception e) {
@@ -293,7 +294,7 @@ public class DataModelResource {
   @Path("{id}")
   @DELETE
   @Produces(MediaType.APPLICATION_JSON)
-  public RestDataModel delete(@PathParam(value = "id") String id) throws JsonProcessingException {
+  public Response delete(@PathParam(value = "id") String id) throws JsonProcessingException {
     checkApplication(true);
 
     if (StringUtils.isEmpty(id)) {
@@ -308,8 +309,8 @@ public class DataModelResource {
     }
 
     RestDataModel returnModel = doBackendDelete(id, context);
-
-    return returnModel;
+    String json = JacksonUtils.getJsonMapper().writeValueAsString(returnModel);
+    return Response.status(Status.OK).entity(json).build();
   }
 
   private RestDataModel doBackendDelete(String id, de.mcs.microservice.application.core.model.Context context) {

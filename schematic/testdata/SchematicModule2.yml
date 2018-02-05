@@ -3,37 +3,3 @@ mode: overwrite
 name: SchematicModule2
 description: this is the main module for the schematic files
 package: de.mcs.microservice.schematic
-datamodels:
-  - type: DataModel
-    mode: overwrite
-    name: SchematicDataModel2
-    description: this is the data model for the schematic files
-    datamodelhooks: 
-      type: DataModelHooks
-      mode: merge
-      name: SchematicDataModel2Hooks
-      description: this are the hooks for the data model for the schematic files
-    storage: 
-    hide: false
-    fields:
-      - name: schematicName
-        description: name of the schematic file
-        type: String
-        index: true
-        fulltext: true
-      - name: tags
-        description: tags of the schematic file
-        type: List<String>
-        index: true
-        fulltext: true
-      - name: filename
-        description: filename of the schematic file
-        type: String
-        index: true
-        fulltext: true
-      - name: file
-        description: the file object
-        type: BlobDescription
-        index: false
-        fulltext: false
-  
