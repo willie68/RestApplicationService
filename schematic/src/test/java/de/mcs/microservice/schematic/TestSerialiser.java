@@ -42,12 +42,12 @@ public class TestSerialiser {
   @Test
   public void test() throws IOException {
     ObjectMapper jsonMapper = JacksonUtils.getJsonMapper();
-    SchematicDataModel model = new SchematicDataModel();
+    Schematic model = new Schematic();
     {
       String json = jsonMapper.writeValueAsString(model);
       assertNotNull(json);
       System.out.println(json);
-      SchematicDataModel jsonModel = jsonMapper.readValue(json, SchematicDataModel.class);
+      Schematic jsonModel = jsonMapper.readValue(json, Schematic.class);
       assertNotNull(jsonModel);
     }
 
@@ -62,7 +62,7 @@ public class TestSerialiser {
       String json = jsonMapper.writeValueAsString(model);
       assertNotNull(json);
       System.out.println(json);
-      SchematicDataModel jsonModel = jsonMapper.readValue(json, SchematicDataModel.class);
+      Schematic jsonModel = jsonMapper.readValue(json, Schematic.class);
       assertNotNull(jsonModel);
     }
 
@@ -74,7 +74,7 @@ public class TestSerialiser {
       String json = jsonMapper.writeValueAsString(model);
       assertNotNull(json);
       System.out.println(json);
-      SchematicDataModel jsonModel = jsonMapper.readValue(json, SchematicDataModel.class);
+      Schematic jsonModel = jsonMapper.readValue(json, Schematic.class);
       assertNotNull(jsonModel);
     }
 

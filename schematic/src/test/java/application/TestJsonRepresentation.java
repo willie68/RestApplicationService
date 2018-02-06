@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.mcs.microservice.schematic.SchematicDataModel;
+import de.mcs.microservice.schematic.Schematic;
 import de.mcs.microservice.utils.JacksonUtils;
 
 public class TestJsonRepresentation {
@@ -18,7 +18,7 @@ public class TestJsonRepresentation {
   public void test() throws IOException, InterruptedException {
     ObjectMapper jsonMapper = JacksonUtils.getJsonMapper();
 
-    SchematicDataModel model = new SchematicDataModel();
+    Schematic model = new Schematic();
     model.setSchematicName("schematic");
     assertEquals("schematic", model.getSchematicName());
 
@@ -29,7 +29,7 @@ public class TestJsonRepresentation {
     System.out.println(json);
 
     Thread.sleep(1000);
-    SchematicDataModel model2 = jsonMapper.readValue(json, SchematicDataModel.class);
+    Schematic model2 = jsonMapper.readValue(json, Schematic.class);
     assertEquals("schematic", model2.getSchematicName());
 
     assertEquals(model.getCreatedAt().getTime(), model2.getCreatedAt().getTime());

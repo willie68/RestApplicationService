@@ -5,7 +5,7 @@ moduleName: SchematicModule2
 description: this is the data model for the schematic files
 hooks: SchematicDataModelHooks2
 package: de.mcs.microservice.schematic
-storage: de.mcs.microservice.application.storage.NitriteDataStorage
+storage: SchematicStorage2
 hide: false
 fields:
   - name: schematicName

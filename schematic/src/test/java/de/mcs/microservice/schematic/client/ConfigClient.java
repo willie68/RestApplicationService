@@ -9,7 +9,6 @@ import java.security.SecureRandom;
 import java.util.List;
 
 import javax.net.ssl.SSLContext;
-import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -22,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 import de.mcs.microservice.application.api.BaseModel;
-import de.mcs.microservice.schematic.SchematicDataModel;
 import de.mcs.microservice.schematic.client.AbstractClient.TrustAllHostNameVerifier;
 
 /**
@@ -65,25 +63,6 @@ public class ConfigClient {
     tenantModel.setKeyValue("tenant", tenant);
     return addHeader(schematicWebTarget.path(appName).path("tenants").request(MediaType.APPLICATION_JSON))
         .post(Entity.entity(tenantModel, MediaType.APPLICATION_JSON));
-  }
-
-  public SchematicDataModel get(String id) {
-    return addHeader(schematicWebTarget.path(id).request(MediaType.APPLICATION_JSON)).get(SchematicDataModel.class);
-  }
-
-  public SchematicDataModel post(SchematicDataModel schematicDataModel) {
-    String id = null;
-    Response response = addHeader(schematicWebTarget.request(MediaType.APPLICATION_JSON))
-        .post(Entity.entity(schematicDataModel, MediaType.APPLICATION_JSON));
-    if (response.getStatus() == 201) {
-      return response.readEntity(SchematicDataModel.class);
-    } else {
-      String readEntity = response.readEntity(String.class);
-      System.out.println(response.getStatusInfo());
-      System.out.println(readEntity);
-
-      throw new ProcessingException("model not created.");
-    }
   }
 
   private Builder addHeader(Builder builder) {
