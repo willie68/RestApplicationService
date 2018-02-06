@@ -35,6 +35,9 @@ public class Context {
   private String moduleName;
   private String modelName;
   private String tenant;
+  private DataModelConfig dataModelConfig;
+  private ApplicationConfig applicationConfig;
+  private ModuleConfig moduleConfig;
 
   public Context setApplicationName(String applicationName) {
     this.applicationName = applicationName;
@@ -100,4 +103,39 @@ public class Context {
     return this.tenant;
   }
 
+  public Context setDataModelConfig(DataModelConfig dataModelConfig) {
+    this.dataModelConfig = dataModelConfig;
+    return this;
+  }
+
+  public DataModelConfig getDataModelConfig() {
+    return dataModelConfig;
+  }
+
+  public Context setApplicationConfig(ApplicationConfig applicationConfig) {
+    this.applicationConfig = applicationConfig;
+    return this;
+  }
+
+  public ApplicationConfig getApplicationConfig() {
+    return applicationConfig;
+  }
+
+  public Context clone() {
+    Context newContext = new Context();
+    newContext.setApplicationConfig(applicationConfig).setApplicationName(applicationName)
+        .setDataModelConfig(dataModelConfig).setModelName(modelName).setModuleConfig(moduleConfig)
+        .setModuleName(moduleName).setTenant(tenant);
+    return newContext;
+
+  }
+
+  public Context setModuleConfig(ModuleConfig moduleConfig) {
+    this.moduleConfig = moduleConfig;
+    return this;
+  }
+
+  public ModuleConfig getModuleConfig() {
+    return moduleConfig;
+  }
 }

@@ -40,7 +40,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import de.mcs.jmeasurement.MeasureFactory;
 import de.mcs.jmeasurement.Monitor;
-import de.mcs.microservice.application.ConfigStorageConfig;
 import de.mcs.microservice.application.RestApplicationService;
 import de.mcs.microservice.application.annotations.Application.TenantType;
 import de.mcs.microservice.application.api.BlobDescription;
@@ -53,7 +52,6 @@ import de.mcs.microservice.application.core.model.DataStorage;
 import de.mcs.microservice.application.core.model.ModuleConfig;
 import de.mcs.microservice.application.core.model.RestDataModel;
 import de.mcs.microservice.application.core.model.RestDataModelHooks;
-import de.mcs.microservice.application.storage.NitriteDataStorage;
 import de.mcs.microservice.utils.JacksonUtils;
 import de.mcs.utils.StreamHelper;
 
@@ -85,9 +83,7 @@ public class DataModelResource {
   String modelName;
 
   private ApplicationConfig application;
-
   private ModuleConfig module;
-
   private DataModelConfig dataModelConfig;
   private String applicationTenant;
 
@@ -98,35 +94,12 @@ public class DataModelResource {
     checkApplication(true);
 
     try {
-      List<RestDataModel> myModels = doBackendFind(query, buildContext());
+      List<RestDataModel> myModels = RestApplicationService.getServerApi().doBackendFind(query, buildContext());
       String json = JacksonUtils.getJsonMapper().writeValueAsString(myModels);
       return Response.status(Status.OK).entity(json).build();
     } catch (WebApplicationException e) {
       throw e;
     } catch (Exception e) {
-      throw new WebApplicationException("unknown error occured", e, Status.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  private List<RestDataModel> doBackendFind(String query, de.mcs.microservice.application.core.model.Context context) {
-    try {
-      RestDataModelHooks hooks = dataModelConfig.getDataModelHooks();
-
-      String newQuery = hooks.beforeFind(query, context);
-      if (newQuery == null) {
-        newQuery = query;
-      }
-
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
-      List<RestDataModel> list = storage.find(newQuery, context);
-
-      List<RestDataModel> newList = hooks.afterFind(newQuery, list, context);
-      if (newList == null) {
-        newList = list;
-      }
-      return newList;
-    } catch (InstantiationException | IllegalAccessException e) {
-      log.error("unknown error occured", e);
       throw new WebApplicationException("unknown error occured", e, Status.INTERNAL_SERVER_ERROR);
     }
   }
@@ -168,7 +141,8 @@ public class DataModelResource {
         myModel = beforeCreate;
       }
 
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
+      DataStorage storage = RestApplicationService.getServerApi().initStorage(dataModelConfig.getDataStorage(),
+          context);
 
       storage.create(myModel, context);
 
@@ -213,7 +187,8 @@ public class DataModelResource {
         newId = id;
       }
 
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
+      DataStorage storage = RestApplicationService.getServerApi().initStorage(dataModelConfig.getDataStorage(),
+          context);
       RestDataModel myModel = storage.read(newId, context);
 
       if (myModel != null) {
@@ -277,7 +252,8 @@ public class DataModelResource {
         model = beforeUpdate;
       }
 
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
+      DataStorage storage = RestApplicationService.getServerApi().initStorage(dataModelConfig.getDataStorage(),
+          context);
       storage.update(model, context);
 
       RestDataModel afterUpdate = hooks.afterUpdate(model, context);
@@ -322,7 +298,8 @@ public class DataModelResource {
         newId = id;
       }
 
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
+      DataStorage storage = RestApplicationService.getServerApi().initStorage(dataModelConfig.getDataStorage(),
+          context);
       RestDataModel deleteModel = storage.delete(newId, context);
 
       RestDataModel afterUpdate = hooks.afterUpdate(deleteModel, context);
@@ -428,7 +405,8 @@ public class DataModelResource {
 
   private de.mcs.microservice.application.core.model.Context buildContext() {
     de.mcs.microservice.application.core.model.Context context = de.mcs.microservice.application.core.model.Context
-        .create().setApplicationName(appName).setModuleName(moduleName).setModelName(modelName);
+        .create().setApplicationName(appName).setModuleName(moduleName).setModuleConfig(module).setModelName(modelName)
+        .setApplicationConfig(application).setDataModelConfig(dataModelConfig);
     if (TenantType.MULTI_TENANT.equals(application.getTenantType())) {
       context.setTenant(applicationTenant);
     }
@@ -439,36 +417,6 @@ public class DataModelResource {
     if (!dataModelConfig.isVisible()) {
       throw new WebApplicationException(String.format("data model \"%s\" not found.", modelName), Status.NOT_FOUND);
     }
-  }
-
-  private DataStorage initStorage(DataStorage storage) {
-    if (storage instanceof NitriteDataStorage) {
-      NitriteDataStorage nitriteStorage = (NitriteDataStorage) storage;
-      if (!nitriteStorage.isInitialised()) {
-        ConfigStorageConfig config = RestApplicationService.getInstance().getConfiguration()
-            .getInternalDatastoreConfig();
-        try {
-          Class dataType = Thread.currentThread().getContextClassLoader().loadClass(dataModelConfig.getClassName());
-          nitriteStorage.initialise(config, application, dataType);
-        } catch (ClassNotFoundException e) {
-          e.printStackTrace();
-        }
-      }
-    }
-    if (storage instanceof NitriteDataStorage) {
-      NitriteDataStorage nitriteStorage = (NitriteDataStorage) storage;
-      if (!nitriteStorage.isInitialised()) {
-        ConfigStorageConfig config = RestApplicationService.getInstance().getConfiguration()
-            .getInternalDatastoreConfig();
-        try {
-          Class dataType = Thread.currentThread().getContextClassLoader().loadClass(dataModelConfig.getClassName());
-          nitriteStorage.initialise(config, application, dataType);
-        } catch (ClassNotFoundException e) {
-          e.printStackTrace();
-        }
-      }
-    }
-    return storage;
   }
 
   @POST
@@ -502,7 +450,8 @@ public class DataModelResource {
         }
       }
 
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
+      DataStorage storage = RestApplicationService.getServerApi().initStorage(dataModelConfig.getDataStorage(),
+          context);
       blobDescription = storage.saveBlob(dbModel, fieldname, blobDescription, fileInputStream,
           blobDescription.getContentLength(), context);
       return Response.ok(blobDescription).status(201).build();
@@ -546,7 +495,8 @@ public class DataModelResource {
     }
 
     try {
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
+      DataStorage storage = RestApplicationService.getServerApi().initStorage(dataModelConfig.getDataStorage(),
+          context);
 
       if (storage.hasBlob(dbModel, fieldname, context)) {
         BlobDescription blobDescription = storage.getBlobDescription(dbModel, fieldname, context);
@@ -608,7 +558,8 @@ public class DataModelResource {
     }
 
     try {
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
+      DataStorage storage = RestApplicationService.getServerApi().initStorage(dataModelConfig.getDataStorage(),
+          context);
 
       if (storage.hasBlob(dbModel, fieldname, context)) {
         BlobDescription blobDescription = storage.getBlobDescription(dbModel, fieldname, context);
@@ -644,7 +595,8 @@ public class DataModelResource {
     }
 
     try {
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
+      DataStorage storage = RestApplicationService.getServerApi().initStorage(dataModelConfig.getDataStorage(),
+          context);
       if (!storage.hasBlob(dbModel, fieldname, context)) {
         throw new WebApplicationException("blob not found", Status.NOT_FOUND);
       }

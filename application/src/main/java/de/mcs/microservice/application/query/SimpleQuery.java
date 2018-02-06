@@ -26,6 +26,9 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import de.mcs.microservice.utils.JacksonUtils;
 
 /**
  * @author wklaa_000
@@ -49,6 +52,10 @@ public class SimpleQuery {
   @JsonAnySetter
   public void set(String name, Object value) {
     data.put(name, value);
+  }
+
+  public String toJson() throws JsonProcessingException {
+    return JacksonUtils.getJsonMapper().writeValueAsString(this);
   }
 
 }

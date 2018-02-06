@@ -6,6 +6,7 @@ package de.mcs.microservice.application.api;
 import java.util.List;
 
 import de.mcs.microservice.application.core.model.Context;
+import de.mcs.microservice.application.core.model.DataStorage;
 import de.mcs.microservice.application.core.model.RestDataModel;
 
 /**
@@ -21,4 +22,8 @@ public interface ServerAPI {
   void log(LogLevel level, Context context, String message);
 
   void logError(LogLevel level, Context context, String message, Throwable throwable);
+
+  List<RestDataModel> doBackendFind(String query, Context buildContext);
+
+  DataStorage initStorage(DataStorage storage, Context context);
 }
