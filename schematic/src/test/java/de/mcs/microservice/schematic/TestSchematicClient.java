@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Random;
 
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.Response;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -51,6 +52,11 @@ public class TestSchematicClient {
     assertTrue(appNames.contains("SchematicApplication"));
     BaseModel appConfig = configClient.getApp("SchematicApplication");
     String apikey = appConfig.getFieldValueAsString("apikey");
+    List<String> tenants = (List<String>) appConfig.getField("tenants");
+    if ((tenants == null) || (tenants.size() == 0) || !tenants.contains(Connection.TENANT)) {
+      Response addTenant = configClient.addTenant("SchematicApplication", Connection.TENANT);
+      assertNotNull(addTenant);
+    }
     client = new SchematicClient(Connection.BASE_URL, Connection.TENANT, "w.klaas@gmx.de", "akteon00", apikey);
   }
 

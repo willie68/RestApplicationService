@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -26,6 +28,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -196,8 +199,24 @@ public class AbstractClient<T extends RestDataModel> {
     try {
       String queryURL;
       queryURL = URLEncoder.encode(query, "UTF-8");
-      List<T> models = addHeader(getWebTarget().queryParam("q", queryURL).request(MediaType.APPLICATION_JSON))
-          .get(List.class);
+      ParameterizedType parameterizedGenericType = new ParameterizedType() {
+        public Type[] getActualTypeArguments() {
+          return new Type[] { dataclass };
+        }
+
+        public Type getRawType() {
+          return List.class;
+        }
+
+        public Type getOwnerType() {
+          return List.class;
+        }
+      };
+
+      GenericType<List<T>> gt = new GenericType<List<T>>(parameterizedGenericType) {
+      };
+
+      List<T> models = addHeader(getWebTarget().queryParam("q", queryURL).request(MediaType.APPLICATION_JSON)).get(gt);
       return models;
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
