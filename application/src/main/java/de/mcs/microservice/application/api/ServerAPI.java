@@ -26,4 +26,12 @@ public interface ServerAPI {
   List<RestDataModel> doBackendFind(String query, Context buildContext);
 
   DataStorage initStorage(DataStorage storage, Context context);
+
+  RestDataModel doBackendCreate(RestDataModel myModel, Context buildContext);
+
+  RestDataModel doBackendRead(String id, Context context);
+
+  RestDataModel doBackendDelete(String id, Context context);
+
+  RestDataModel doBackendUpdate(RestDataModel model, RestDataModel dbModel, Context context);
 }
