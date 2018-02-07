@@ -1,0 +1,33 @@
+## class.vm
+package ${class.package}.client;
+
+import java.util.*;
+import de.mcs.microservice.application.annotations.DataModel;
+import de.mcs.microservice.application.annotations.Index;
+import de.mcs.microservice.application.api.BlobDescription;
+import de.mcs.microservice.application.core.model.RestDataModel;
+import de.mcs.microservice.application.core.AbstractRestDataModel;
+
+
+public class $class.name extends AbstractRestDataModel implements RestDataModel {
+
+  @Override
+  public String getModuleName() {
+    return "$class.moduleName";
+  }
+  
+  @Override
+  public String getModelName() {
+    return "$class.name";
+  }
+  
+#foreach($att in $class.fields)
+  public $att.type get$utility.firstToUpperCase($att.name)() {
+    return ($att.type) this.any().get("$att.name");
+  }
+  
+  public void set$utility.firstToUpperCase($att.name)($att.type $att.name) {
+    this.setValue("$att.name", $att.name);
+  }
+#end
+}

@@ -2,6 +2,21 @@ type: Client
 name: JavaClient
 description: this is the template generator class for a java client
 files: 
-  - name: AbstractClient
-    template: abstractclient.vm
+  - name: AbstractClient.java
+    template: AbstractClient.vm
     mode: once
+  - name: AbstractRestDataModel.java
+    template: AbstractRestDataModel.vm
+    mode: once
+  - name: RestDataModel.java
+    template: RestDataModel.vm
+    mode: once
+  - name: BasicAuthenticator.java
+    template: BasicAuthenticator.vm
+    mode: once
+  - name: ${class}.java
+    template: DataModel.vm
+    mode: model
+  - name: ${class}Client.java
+    template: DataModelClient.vm
+    mode: model
