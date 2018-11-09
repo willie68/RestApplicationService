@@ -1,0 +1,36 @@
+/**
+ * 
+ */
+package ${class.package}.client;
+
+import java.io.File;
+import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
+
+/**
+ * @author w.klaas
+ *
+ */
+public class ${class.name}Client extends AbstractClient<${class.name}> {
+
+  public ${class.name}Client(String baseUrl, String tenant, String username, String password, String apikey)
+      throws NoSuchAlgorithmException, KeyManagementException {
+    super(baseUrl, tenant, apikey, Schematic.class);
+    client.register(new BasicAuthenticator(username, password));
+
+    setWebTarget(getBaseWebTarget().path("${class.application}/module/${class.module}/model/${class.name}/"));
+  }
+
+#foreach($att in $class.fields)
+#if ($class.fields.type.equals("blob"))
+  public ${class.name} post${att.name}(${class.name} model, File file, Map<String, Object> properties) {
+    return postBlob(model, ${att.name}, file, properties);
+  }
+
+  public InputStream get${att.name}(${class.name} model) {
+    return getBlob(model, ${att.name});
+  }
+#end
+}

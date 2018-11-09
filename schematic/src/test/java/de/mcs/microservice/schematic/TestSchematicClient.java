@@ -5,6 +5,7 @@ package de.mcs.microservice.schematic;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -19,13 +20,17 @@ import java.util.List;
 import java.util.Random;
 
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.Response;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import de.mcs.microservice.application.api.BaseModel;
 import de.mcs.microservice.application.query.SimpleQuery;
+import de.mcs.microservice.schematic.client.ConfigClient;
+import de.mcs.microservice.schematic.client.Connection;
 import de.mcs.microservice.schematic.client.SchematicClient;
 import de.mcs.microservice.utils.JacksonUtils;
 import de.mcs.utils.Files;
@@ -38,55 +43,73 @@ import de.mcs.utils.StreamHelper;
 public class TestSchematicClient {
 
   private SchematicClient client;
+  private ConfigClient configClient;
 
   @Before
   public void before() throws KeyManagementException, NoSuchAlgorithmException {
-    client = new SchematicClient("https://127.0.0.1:8443", "wkla", "w.klaas@gmx.de", "akteon00",
-        "cce0ef23-c0bf-4a25-b871-1219f482d863");
+    configClient = new ConfigClient("https://127.0.0.1:8444");
+    List<String> appNames = configClient.getAppNames();
+    assertTrue(appNames.contains("SchematicApplication"));
+    BaseModel appConfig = configClient.getApp("SchematicApplication");
+    String apikey = appConfig.getFieldValueAsString("apikey");
+    List<String> tenants = (List<String>) appConfig.getField("tenants");
+    if ((tenants == null) || (tenants.size() == 0) || !tenants.contains(Connection.TENANT)) {
+      Response addTenant = configClient.addTenant("SchematicApplication", Connection.TENANT);
+      assertNotNull(addTenant);
+    }
+    client = new SchematicClient(Connection.BASE_URL, Connection.TENANT, "w.klaas@gmx.de", "akteon00", apikey);
   }
 
   @Test(expected = NotFoundException.class)
   public void testGet() {
-    SchematicDataModel schematicDataModel = client.get("e78d2252-3a50-421e-abc2-98031c999ed7");
+    Schematic schematic = client.get("e78d2252-3a50-421e-abc2-98031c999ed7");
   }
 
   @Test
   public void testPost() throws JsonProcessingException, InterruptedException {
     Random random = new Random(System.currentTimeMillis());
-    SchematicDataModel schematicDataModel = new SchematicDataModel();
-    schematicDataModel.setFilename("filename");
-    schematicDataModel.setSchematicName("schematicName");
-    schematicDataModel.setTags(Arrays.asList(new String[] { "tube", "amp" }));
+    Schematic schematic = new Schematic();
+    schematic.setFilename("filename");
+    schematic.setSchematicName("schematicName");
+    schematic.setTags(Arrays.asList(new String[] { "tube", "amp" }));
 
-    SchematicDataModel newModel = client.post(schematicDataModel);
+    Schematic newModel = client.post(schematic);
     assertNotNull(newModel);
     System.out.printf("id:%s\r\n", newModel.getId());
 
-    schematicDataModel = newModel;
-    schematicDataModel.setFilename("filename2");
-    schematicDataModel.setSchematicName("schematicName2");
-    schematicDataModel.setTags(Arrays.asList(new String[] { "tube2", "amp2" }));
+    schematic = newModel;
+    schematic.setFilename("filename2");
+    schematic.setSchematicName("schematicName2");
+    schematic.setTags(Arrays.asList(new String[] { "tube2", "amp2" }));
 
-    SchematicDataModel putModel = client.put(schematicDataModel);
+    Schematic putModel = client.put(schematic);
     assertNotNull(putModel);
     System.out.printf("id:%s\r\n", putModel.getId());
 
-    SchematicDataModel model2 = client.get(schematicDataModel.getId());
+    Schematic model2 = client.get(schematic.getId());
     assertNotNull(model2);
     System.out.printf("id:%s\r\n", model2.getId());
-    assertEquals(schematicDataModel.getId(), model2.getId());
-    assertEquals(schematicDataModel.getFilename(), model2.getFilename());
-    assertEquals(schematicDataModel.getSchematicName(), model2.getSchematicName());
+    assertEquals(schematic.getId(), model2.getId());
+    assertEquals(schematic.getFilename(), model2.getFilename());
+    assertEquals(schematic.getSchematicName(), model2.getSchematicName());
+
+    Schematic delModel = client.delete(schematic.getId());
+    assertNotNull(delModel);
+    System.out.printf("id:%s\r\n", delModel.getId());
+    assertEquals(schematic.getId(), delModel.getId());
+    assertEquals(schematic.getFilename(), delModel.getFilename());
+    assertEquals(schematic.getSchematicName(), delModel.getSchematicName());
+
   }
 
   @Test
   public void testPostBlob() {
-    SchematicDataModel schematicDataModel = new SchematicDataModel();
-    schematicDataModel.setFilename("filename");
-    schematicDataModel.setSchematicName("schematicName");
-    schematicDataModel.setTags(Arrays.asList(new String[] { "tube", "amp" }));
+    Schematic schematic = new Schematic();
+    schematic.setFilename("filename");
+    schematic.setSchematicName("schematicName");
+    schematic.setTags(Arrays.asList(new String[] { "tube", "amp" }));
 
-    SchematicDataModel newModel = client.post(schematicDataModel);
+    Schematic newModel = client.post(schematic);
     assertNotNull(newModel);
     System.out.printf("id:%s\r\n", newModel.getId());
 
@@ -110,6 +133,10 @@ public class TestSchematicClient {
     String srvSHAFile = Files.computeSHAFromFile(srvFile);
 
     assertEquals(orgSHAFile, srvSHAFile);
+
+    Schematic delModel = client.delete(newModel.getId());
+    assertNotNull(delModel);
+    System.out.printf("id:%s\r\n", delModel.getId());
   }
 
   @Test
@@ -118,22 +145,22 @@ public class TestSchematicClient {
     int nextInt = random.nextInt();
     String filename = String.format("file%d", nextInt);
     String schematicName = String.format("schematic%d", nextInt);
-    SchematicDataModel schematicDataModel = new SchematicDataModel();
-    schematicDataModel.setFilename(filename);
-    schematicDataModel.setSchematicName(schematicName);
-    schematicDataModel.setTags(Arrays.asList(new String[] { "tube", "amp", Integer.toString(nextInt) }));
+    Schematic schematic = new Schematic();
+    schematic.setFilename(filename);
+    schematic.setSchematicName(schematicName);
+    schematic.setTags(Arrays.asList(new String[] { "tube", "amp", Integer.toString(nextInt) }));
 
-    SchematicDataModel newModel = client.post(schematicDataModel);
+    Schematic newModel = client.post(schematic);
     assertNotNull(newModel);
     System.out.printf("id:%s\r\n", newModel.getId());
 
     Thread.sleep(1000);
 
     SimpleQuery simpleQuery = new SimpleQuery();
-    simpleQuery.set("filename", schematicDataModel.getFilename());
+    simpleQuery.set("schematicName", schematic.getSchematicName());
     String query = JacksonUtils.getJsonMapper().writeValueAsString(simpleQuery);
 
-    List<SchematicDataModel> models = client.find(query);
+    List<Schematic> models = client.find(query);
     assertNotNull(models);
     assertEquals(1, models.size());
 
@@ -142,7 +169,7 @@ public class TestSchematicClient {
     assertEquals(newModel.getSchematicName(), models.get(0).getSchematicName());
 
     simpleQuery = new SimpleQuery();
-    simpleQuery.set("schematicName", schematicDataModel.getSchematicName());
+    simpleQuery.set("filename", schematic.getFilename());
     query = JacksonUtils.getJsonMapper().writeValueAsString(simpleQuery);
 
     models = client.find(query);
@@ -152,8 +179,8 @@ public class TestSchematicClient {
     assertEquals(newModel.getId(), models.get(0).getId());
 
     simpleQuery = new SimpleQuery();
-    simpleQuery.set("schematicName", schematicDataModel.getSchematicName());
-    simpleQuery.set("filename", schematicDataModel.getFilename());
+    simpleQuery.set("schematicName", schematic.getSchematicName());
+    simpleQuery.set("filename", schematic.getFilename());
     query = JacksonUtils.getJsonMapper().writeValueAsString(simpleQuery);
 
     models = client.find(query);

@@ -1,11 +1,11 @@
 type: DataModel
 mode: overwrite
-name: SchematicDataModel
-moduleName: SchematicModule
+name: SchematicDataModel2
+moduleName: SchematicModule2
 description: this is the data model for the schematic files
-hooks: SchematicDataModelHooks
+hooks: SchematicDataModelHooks2
 package: de.mcs.microservice.schematic
-storage: de.mcs.microservice.application.storage.NitriteDataStorage
+storage: SchematicStorage2
 hide: false
 fields:
   - name: schematicName

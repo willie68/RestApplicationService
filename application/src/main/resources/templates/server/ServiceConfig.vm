@@ -1,0 +1,12 @@
+package $class.package;
+/**
+ * $class.name
+ * $class.description
+ * Copyright (c) $class.vendor $class.creationYear
+ */
+
+import de.mcs.microservice.application.AppServiceConfig;
+
+public class $class.name extends AppServiceConfig {
+
+}

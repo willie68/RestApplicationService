@@ -1,10 +1,4 @@
 package de.mcs.microservice.application;
-/**
- * EASY MICROSERVICE PLATFORM
- * Copyright (c) EASY SOFTWARE AG 2014 - 2015
- * All rights reserved
- * Project: config-service
- */
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -17,18 +11,22 @@ import java.util.UUID;
 import javax.ws.rs.Path;
 
 import org.apache.commons.lang.StringUtils;
+import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.mcs.jmeasurement.MeasureFactory;
 import de.mcs.microservice.application.annotations.DynamicPath;
+import de.mcs.microservice.application.api.ServerAPI;
 import de.mcs.microservice.application.core.AbstractRestResource;
 import de.mcs.microservice.application.core.AnnotationScanner;
+import de.mcs.microservice.application.core.impl.RestServerApi;
 import de.mcs.microservice.application.core.model.ApplicationConfig;
 import de.mcs.microservice.application.core.model.DataModelConfig;
 import de.mcs.microservice.application.core.model.FieldConfig;
 import de.mcs.microservice.application.core.model.ModuleConfig;
 import de.mcs.microservice.application.core.model.RestResourceConfig;
+import de.mcs.microservice.application.health.BaseHealthCheck;
 import de.mcs.microservice.application.resources.ConfigResource;
 import de.mcs.microservice.application.resources.CustomAuthFilter;
 import de.mcs.microservice.application.resources.CustomAuthenticator;
@@ -39,11 +37,14 @@ import de.mcs.microservice.application.storage.ConfigStorage;
 import io.dropwizard.Application;
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.forms.MultiPartBundle;
+import io.dropwizard.jersey.DropwizardResourceConfig;
+import io.dropwizard.jersey.setup.JerseyContainerHolder;
+import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
 /**
- * Service class for Service-Registry-Server
+ * Abstract base class for the RestApplicationService
  * 
  * @author w.klaas
  *
@@ -53,6 +54,7 @@ public abstract class RestApplicationService<T extends AppServiceConfig> extends
   private Logger log;
   private Map<String, ApplicationConfig> applications;
   private T configuration;
+  private ServerAPI serverApi;
 
   private static RestApplicationService<?> instance;
 
@@ -204,9 +206,34 @@ public abstract class RestApplicationService<T extends AppServiceConfig> extends
 
     outputRestApplication();
 
+    addingAdminResources(environment);
+
     addingStaticResources(environment);
 
     addingRestApplicationResources(environment);
+
+    addingBaseHealthCheck(environment);
+
+    createServerAPI();
+  }
+
+  private void createServerAPI() {
+    serverApi = new RestServerApi();
+  }
+
+  private void addingAdminResources(Environment environment) {
+    final DropwizardResourceConfig jerseyConfig = new DropwizardResourceConfig(environment.metrics());
+    JerseyContainerHolder jerseyContainerHolder = new JerseyContainerHolder(new ServletContainer(jerseyConfig));
+    JerseyEnvironment jerseyEnvironment = new JerseyEnvironment(jerseyContainerHolder, jerseyConfig);
+
+    jerseyEnvironment.register(ServiceResource.class);
+    jerseyEnvironment.register(new ConfigResource());
+    environment.admin().addServlet("admin jersey resources", jerseyContainerHolder.getContainer())
+        .addMapping("/service/*");
+  }
+
+  private void addingBaseHealthCheck(Environment environment) {
+    environment.healthChecks().register("base", new BaseHealthCheck());
   }
 
   private void addingRestApplicationResources(Environment environment) throws ClassNotFoundException {
@@ -229,13 +256,8 @@ public abstract class RestApplicationService<T extends AppServiceConfig> extends
     CustomAuthFilter filter = new CustomAuthFilter(new CustomAuthenticator());
     environment.jersey().register(new AuthDynamicFeature(filter));
 
-    // final InfoResource infoResource = new InfoResource();
     environment.jersey().register(InfoResource.class);
-
-    // final DataModelResource dataModelResource = new DataModelResource();
     environment.jersey().register(DataModelResource.class);
-    environment.jersey().register(ServiceResource.class);
-    environment.jersey().register(ConfigResource.class);
   }
 
   private void initConfigStorage() {
@@ -301,6 +323,13 @@ public abstract class RestApplicationService<T extends AppServiceConfig> extends
    */
   public ConfigStorage getConfigStorage() {
     return configStorage;
+  }
+
+  /**
+   * @return the serverApi
+   */
+  public static ServerAPI getServerApi() {
+    return getInstance().serverApi;
   }
 
 }

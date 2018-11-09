@@ -4,19 +4,19 @@ import java.util.*;
 import de.mcs.microservice.application.core.AbstractRestDataModelHooks;
 import de.mcs.microservice.application.core.model.Context;
 import de.mcs.microservice.application.core.model.RestDataModelHooks;
-import de.mcs.microservice.schematic.SchematicDataModel;
+import de.mcs.microservice.schematic.SchematicDataModel2;
 
-public class SchematicDataModelHooks extends AbstractRestDataModelHooks<SchematicDataModel>
-    implements RestDataModelHooks<SchematicDataModel> {
+public class SchematicDataModelHooks2 extends AbstractRestDataModelHooks<SchematicDataModel2>
+    implements RestDataModelHooks<SchematicDataModel2> {
 
   @Override
-  public SchematicDataModel beforeCreate(SchematicDataModel dataModel, Context context) {
+  public SchematicDataModel2 beforeCreate(SchematicDataModel2 dataModel, Context context) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public SchematicDataModel afterCreate(SchematicDataModel dataModel, Context context) {
+  public SchematicDataModel2 afterCreate(SchematicDataModel2 dataModel, Context context) {
     // TODO Auto-generated method stub
     return null;
   }
@@ -28,19 +28,19 @@ public class SchematicDataModelHooks extends AbstractRestDataModelHooks<Schemati
   }
 
   @Override
-  public SchematicDataModel afterRead(SchematicDataModel dataModel, Context context) {
+  public SchematicDataModel2 afterRead(SchematicDataModel2 dataModel, Context context) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public SchematicDataModel beforeUpdate(SchematicDataModel dataModel, Context context) {
+  public SchematicDataModel2 beforeUpdate(SchematicDataModel2 dataModel, Context context) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public SchematicDataModel afterUpdate(SchematicDataModel dataModel, Context context) {
+  public SchematicDataModel2 afterUpdate(SchematicDataModel2 dataModel, Context context) {
     // TODO Auto-generated method stub
     return null;
   }
@@ -52,7 +52,7 @@ public class SchematicDataModelHooks extends AbstractRestDataModelHooks<Schemati
   }
 
   @Override
-  public SchematicDataModel afterDelete(SchematicDataModel dataModel, Context context) {
+  public SchematicDataModel2 afterDelete(SchematicDataModel2 dataModel, Context context) {
     // TODO Auto-generated method stub
     return null;
   }
@@ -64,7 +64,7 @@ public class SchematicDataModelHooks extends AbstractRestDataModelHooks<Schemati
   }
 
   @Override
-  public List<SchematicDataModel> afterFind(String query, List<SchematicDataModel> list, Context context) {
+  public List<SchematicDataModel2> afterFind(String query, List<SchematicDataModel2> list, Context context) {
     // TODO Auto-generated method stub
     return null;
   }

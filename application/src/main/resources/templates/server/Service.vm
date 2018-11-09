@@ -1,0 +1,49 @@
+package $class.package;
+/**
+ * $class.name
+ * $class.description
+ * Copyright (c) $class.vendor $class.creationYear
+ */
+
+import de.mcs.jmeasurement.MeasureFactory;
+import de.mcs.microservice.application.RestApplicationService;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+
+/**
+ * Service class for
+ */
+public class $class.name extends RestApplicationService<${class.configName}> {
+
+  public static void main(String[] args) {
+    try {
+      new ${class.name}().run(args);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  public ${class.name}() {
+    super();
+    MeasureFactory.setApplicationName(this.getName());
+  }
+
+  @Override
+  public void run(${class.configName} configuration, Environment environment) throws Exception {
+    super.run(configuration, environment);
+  }
+
+  @Override
+  public String getName() {
+    return "$class.serviceName";
+  }
+
+  public void terminate() {
+  }
+
+  @Override
+  public void initialize(Bootstrap<${class.configName}> bootstrap) {
+    super.initialize(bootstrap);
+  }
+
+}

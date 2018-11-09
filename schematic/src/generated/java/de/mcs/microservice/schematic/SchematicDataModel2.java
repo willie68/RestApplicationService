@@ -8,18 +8,18 @@ import de.mcs.microservice.application.core.model.RestDataModel;
 import de.mcs.microservice.application.core.AbstractRestDataModel;
 
 
-@DataModel(name = "SchematicDataModel", description = "this is the data model for the schematic files", moduleName = "SchematicModule"
-  , dataHooks = de.mcs.microservice.schematic.SchematicDataModelHooks.class   , dataStorage = de.mcs.microservice.application.storage.NitriteDataStorage.class )
-public class SchematicDataModel extends AbstractRestDataModel implements RestDataModel {
+@DataModel(name = "SchematicDataModel2", description = "this is the data model for the schematic files", moduleName = "SchematicModule2"
+  , dataHooks = de.mcs.microservice.schematic.SchematicDataModelHooks2.class   , dataStorage = SchematicStorage2.class )
+public class SchematicDataModel2 extends AbstractRestDataModel implements RestDataModel {
 
   @Override
   public String getModuleName() {
-    return "SchematicModule";
+    return "SchematicModule2";
   }
   
   @Override
   public String getModelName() {
-    return "SchematicDataModel";
+    return "SchematicDataModel2";
   }
   
 

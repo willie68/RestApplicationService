@@ -40,7 +40,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import de.mcs.jmeasurement.MeasureFactory;
 import de.mcs.jmeasurement.Monitor;
-import de.mcs.microservice.application.ConfigStorageConfig;
 import de.mcs.microservice.application.RestApplicationService;
 import de.mcs.microservice.application.annotations.Application.TenantType;
 import de.mcs.microservice.application.api.BlobDescription;
@@ -52,9 +51,6 @@ import de.mcs.microservice.application.core.model.DataModelConfig;
 import de.mcs.microservice.application.core.model.DataStorage;
 import de.mcs.microservice.application.core.model.ModuleConfig;
 import de.mcs.microservice.application.core.model.RestDataModel;
-import de.mcs.microservice.application.core.model.RestDataModelHooks;
-import de.mcs.microservice.application.storage.NitriteDataStorage;
-import de.mcs.microservice.application.storage.NitriteDataStorage;
 import de.mcs.microservice.utils.JacksonUtils;
 import de.mcs.utils.StreamHelper;
 
@@ -86,47 +82,23 @@ public class DataModelResource {
   String modelName;
 
   private ApplicationConfig application;
-
   private ModuleConfig module;
-
   private DataModelConfig dataModelConfig;
   private String applicationTenant;
 
   @Path("/")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public List<RestDataModel> getAll(@QueryParam("q") String query) {
+  public Response getAll(@QueryParam("q") String query) {
     checkApplication(true);
 
     try {
-      List<RestDataModel> myModels = doBackendFind(query, buildContext());
-      return myModels;
+      List<RestDataModel> myModels = RestApplicationService.getServerApi().doBackendFind(query, buildContext());
+      String json = JacksonUtils.getJsonMapper().writeValueAsString(myModels);
+      return Response.status(Status.OK).entity(json).build();
     } catch (WebApplicationException e) {
       throw e;
     } catch (Exception e) {
-      throw new WebApplicationException("unknown error occured", e, Status.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  private List<RestDataModel> doBackendFind(String query, de.mcs.microservice.application.core.model.Context context) {
-    try {
-      RestDataModelHooks hooks = dataModelConfig.getDataModelHooks();
-
-      String newQuery = hooks.beforeFind(query, context);
-      if (newQuery == null) {
-        newQuery = query;
-      }
-
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
-      List<RestDataModel> list = storage.find(newQuery, context);
-
-      List<RestDataModel> newList = hooks.afterFind(newQuery, list, context);
-      if (newList == null) {
-        newList = list;
-      }
-      return newList;
-    } catch (InstantiationException | IllegalAccessException e) {
-      log.error("unknown error occured", e);
       throw new WebApplicationException("unknown error occured", e, Status.INTERNAL_SERVER_ERROR);
     }
   }
@@ -148,36 +120,12 @@ public class DataModelResource {
     try {
       RestDataModel myModel = convertDynamicModelIntoDataModelClass(model, dataModelConfig.getClassName());
 
-      myModel = doBackendCreate(myModel, buildContext());
-      return Response.ok(myModel).status(Status.CREATED).build();
+      myModel = RestApplicationService.getServerApi().doBackendCreate(myModel, buildContext());
+      String json = JacksonUtils.getJsonMapper().writeValueAsString(myModel);
+      return Response.status(Status.CREATED).entity(json).build();
     } catch (WebApplicationException e) {
       throw e;
     } catch (Exception e) {
-      throw new WebApplicationException("unknown error occured", e, Status.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  private RestDataModel doBackendCreate(RestDataModel myModel,
-      de.mcs.microservice.application.core.model.Context context) {
-    try {
-      RestDataModelHooks hooks = dataModelConfig.getDataModelHooks();
-
-      RestDataModel beforeCreate = hooks.beforeCreate(myModel, context);
-      if (beforeCreate != null) {
-        myModel = beforeCreate;
-      }
-
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
-
-      storage.create(myModel, context);
-
-      RestDataModel afterCreate = hooks.afterCreate(myModel, context);
-      if (afterCreate != null) {
-        myModel = afterCreate;
-      }
-      return myModel;
-    } catch (InstantiationException | IllegalAccessException e) {
-      log.error("unknown error occured", e);
       throw new WebApplicationException("unknown error occured", e, Status.INTERNAL_SERVER_ERROR);
     }
   }
@@ -190,7 +138,7 @@ public class DataModelResource {
 
     RestDataModel myModel = null;
     try {
-      myModel = doBackendRead(id, buildContext());
+      myModel = RestApplicationService.getServerApi().doBackendRead(id, buildContext());
       if (myModel == null) {
         throw new WebApplicationException(String.format("Data model with id \"%s\" not found.", id), Status.NOT_FOUND);
       }
@@ -199,28 +147,6 @@ public class DataModelResource {
     } catch (WebApplicationException e) {
       throw e;
     } catch (Exception e) {
-      throw new WebApplicationException("unknown error occured", e, Status.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  private RestDataModel doBackendRead(String id, de.mcs.microservice.application.core.model.Context context) {
-    try {
-      RestDataModelHooks<RestDataModel> hooks = dataModelConfig.getDataModelHooks();
-
-      String newId = hooks.beforeRead(id, context);
-      if (newId == null) {
-        newId = id;
-      }
-
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
-      RestDataModel myModel = storage.read(newId, context);
-
-      if (myModel != null) {
-        hooks.afterRead(myModel, context);
-      }
-      return myModel;
-    } catch (InstantiationException | IllegalAccessException e) {
-      log.error("unknown error occured", e);
       throw new WebApplicationException("unknown error occured", e, Status.INTERNAL_SERVER_ERROR);
     }
   }
@@ -241,7 +167,7 @@ public class DataModelResource {
     }
     de.mcs.microservice.application.core.model.Context context = buildContext();
 
-    RestDataModel dbModel = doBackendRead(id, context);
+    RestDataModel dbModel = RestApplicationService.getServerApi().doBackendRead(id, context);
     if (dbModel == null) {
       throw new WebApplicationException(String.format("Data model with id \"%s\" not found.", id), Status.NOT_FOUND);
     }
@@ -254,7 +180,7 @@ public class DataModelResource {
 
     try {
       RestDataModel myModel = convertDynamicModelIntoDataModelClass(model, dataModelConfig.getClassName());
-      RestDataModel returnModel = doBackendUpdate(myModel, dbModel, context);
+      RestDataModel returnModel = RestApplicationService.getServerApi().doBackendUpdate(myModel, dbModel, context);
       String json = JacksonUtils.getJsonMapper().writeValueAsString(returnModel);
       return Response.status(Status.OK).entity(json).build();
     } catch (WebApplicationException e) {
@@ -266,34 +192,10 @@ public class DataModelResource {
 
   }
 
-  private RestDataModel doBackendUpdate(RestDataModel model, RestDataModel dbModel,
-      de.mcs.microservice.application.core.model.Context context) {
-    try {
-      RestDataModelHooks hooks = dataModelConfig.getDataModelHooks();
-
-      RestDataModel beforeUpdate = hooks.beforeUpdate(model, context);
-      if (beforeUpdate != null) {
-        model = beforeUpdate;
-      }
-
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
-      storage.update(model, context);
-
-      RestDataModel afterUpdate = hooks.afterUpdate(model, context);
-      if (afterUpdate != null) {
-        model = afterUpdate;
-      }
-      return model;
-    } catch (InstantiationException | IllegalAccessException e) {
-      log.error("unknown error occured", e);
-      throw new WebApplicationException("unknown error occured", e, Status.INTERNAL_SERVER_ERROR);
-    }
-  }
-
   @Path("{id}")
   @DELETE
   @Produces(MediaType.APPLICATION_JSON)
-  public RestDataModel delete(@PathParam(value = "id") String id) throws JsonProcessingException {
+  public Response delete(@PathParam(value = "id") String id) throws JsonProcessingException {
     checkApplication(true);
 
     if (StringUtils.isEmpty(id)) {
@@ -302,37 +204,14 @@ public class DataModelResource {
 
     de.mcs.microservice.application.core.model.Context context = buildContext();
 
-    RestDataModel dbModel = doBackendRead(id, context);
+    RestDataModel dbModel = RestApplicationService.getServerApi().doBackendRead(id, context);
     if (dbModel == null) {
       throw new WebApplicationException(String.format("Data model with id \"%s\" not found.", id), Status.NOT_FOUND);
     }
 
-    RestDataModel returnModel = doBackendDelete(id, context);
-
-    return returnModel;
-  }
-
-  private RestDataModel doBackendDelete(String id, de.mcs.microservice.application.core.model.Context context) {
-    try {
-      RestDataModelHooks hooks = dataModelConfig.getDataModelHooks();
-
-      String newId = hooks.beforeDelete(id, context);
-      if (newId == null) {
-        newId = id;
-      }
-
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
-      RestDataModel deleteModel = storage.delete(newId, context);
-
-      RestDataModel afterUpdate = hooks.afterUpdate(deleteModel, context);
-      if (afterUpdate != null) {
-        deleteModel = afterUpdate;
-      }
-      return deleteModel;
-    } catch (InstantiationException | IllegalAccessException e) {
-      log.error("unknown error occured", e);
-      throw new WebApplicationException("unknown error occured", e, Status.INTERNAL_SERVER_ERROR);
-    }
+    RestDataModel returnModel = RestApplicationService.getServerApi().doBackendDelete(id, context);
+    String json = JacksonUtils.getJsonMapper().writeValueAsString(returnModel);
+    return Response.status(Status.OK).entity(json).build();
   }
 
   private void checkApplication(boolean checkModel) {
@@ -427,7 +306,8 @@ public class DataModelResource {
 
   private de.mcs.microservice.application.core.model.Context buildContext() {
     de.mcs.microservice.application.core.model.Context context = de.mcs.microservice.application.core.model.Context
-        .create().setApplicationName(appName).setModuleName(moduleName).setModelName(modelName);
+        .create().setApplicationName(appName).setModuleName(moduleName).setModuleConfig(module).setModelName(modelName)
+        .setApplicationConfig(application).setDataModelConfig(dataModelConfig);
     if (TenantType.MULTI_TENANT.equals(application.getTenantType())) {
       context.setTenant(applicationTenant);
     }
@@ -438,36 +318,6 @@ public class DataModelResource {
     if (!dataModelConfig.isVisible()) {
       throw new WebApplicationException(String.format("data model \"%s\" not found.", modelName), Status.NOT_FOUND);
     }
-  }
-
-  private DataStorage initStorage(DataStorage storage) {
-    if (storage instanceof NitriteDataStorage) {
-      NitriteDataStorage nitriteStorage = (NitriteDataStorage) storage;
-      if (!nitriteStorage.isInitialised()) {
-        ConfigStorageConfig config = RestApplicationService.getInstance().getConfiguration()
-            .getInternalDatastoreConfig();
-        try {
-          Class dataType = Thread.currentThread().getContextClassLoader().loadClass(dataModelConfig.getClassName());
-          nitriteStorage.initialise(config, application, dataType);
-        } catch (ClassNotFoundException e) {
-          e.printStackTrace();
-        }
-      }
-    }
-    if (storage instanceof NitriteDataStorage) {
-      NitriteDataStorage nitriteStorage = (NitriteDataStorage) storage;
-      if (!nitriteStorage.isInitialised()) {
-        ConfigStorageConfig config = RestApplicationService.getInstance().getConfiguration()
-            .getInternalDatastoreConfig();
-        try {
-          Class dataType = Thread.currentThread().getContextClassLoader().loadClass(dataModelConfig.getClassName());
-          nitriteStorage.initialise(config, application, dataType);
-        } catch (ClassNotFoundException e) {
-          e.printStackTrace();
-        }
-      }
-    }
-    return storage;
   }
 
   @POST
@@ -486,7 +336,7 @@ public class DataModelResource {
 
     de.mcs.microservice.application.core.model.Context context = buildContext();
 
-    RestDataModel dbModel = doBackendRead(id, context);
+    RestDataModel dbModel = RestApplicationService.getServerApi().doBackendRead(id, context);
     if (dbModel == null) {
       throw new WebApplicationException(String.format("Data model with id \"%s\" not found.", id), Status.NOT_FOUND);
     }
@@ -501,7 +351,8 @@ public class DataModelResource {
         }
       }
 
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
+      DataStorage<RestDataModel> storage = RestApplicationService.getServerApi()
+          .initStorage(dataModelConfig.getDataStorage(), context);
       blobDescription = storage.saveBlob(dbModel, fieldname, blobDescription, fileInputStream,
           blobDescription.getContentLength(), context);
       return Response.ok(blobDescription).status(201).build();
@@ -539,13 +390,14 @@ public class DataModelResource {
 
     de.mcs.microservice.application.core.model.Context context = buildContext();
 
-    RestDataModel dbModel = doBackendRead(id, context);
+    RestDataModel dbModel = RestApplicationService.getServerApi().doBackendRead(id, context);
     if (dbModel == null) {
       throw new WebApplicationException(String.format("Data model with id \"%s\" not found.", id), Status.NOT_FOUND);
     }
 
     try {
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
+      DataStorage<RestDataModel> storage = RestApplicationService.getServerApi()
+          .initStorage(dataModelConfig.getDataStorage(), context);
 
       if (storage.hasBlob(dbModel, fieldname, context)) {
         BlobDescription blobDescription = storage.getBlobDescription(dbModel, fieldname, context);
@@ -601,13 +453,14 @@ public class DataModelResource {
 
     de.mcs.microservice.application.core.model.Context context = buildContext();
 
-    RestDataModel dbModel = doBackendRead(id, context);
+    RestDataModel dbModel = RestApplicationService.getServerApi().doBackendRead(id, context);
     if (dbModel == null) {
       throw new WebApplicationException(String.format("Data model with id \"%s\" not found.", id), Status.NOT_FOUND);
     }
 
     try {
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
+      DataStorage<RestDataModel> storage = RestApplicationService.getServerApi()
+          .initStorage(dataModelConfig.getDataStorage(), context);
 
       if (storage.hasBlob(dbModel, fieldname, context)) {
         BlobDescription blobDescription = storage.getBlobDescription(dbModel, fieldname, context);
@@ -637,13 +490,14 @@ public class DataModelResource {
 
     de.mcs.microservice.application.core.model.Context context = buildContext();
 
-    RestDataModel dbModel = doBackendRead(id, context);
+    RestDataModel dbModel = RestApplicationService.getServerApi().doBackendRead(id, context);
     if (dbModel == null) {
       throw new WebApplicationException(String.format("Data model with id \"%s\" not found.", id), Status.NOT_FOUND);
     }
 
     try {
-      DataStorage storage = initStorage(dataModelConfig.getDataStorage());
+      DataStorage<RestDataModel> storage = RestApplicationService.getServerApi()
+          .initStorage(dataModelConfig.getDataStorage(), context);
       if (!storage.hasBlob(dbModel, fieldname, context)) {
         throw new WebApplicationException("blob not found", Status.NOT_FOUND);
       }

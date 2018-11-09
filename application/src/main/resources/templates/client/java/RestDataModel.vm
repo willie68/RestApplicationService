@@ -1,10 +1,10 @@
 /**
  * MCS Media Computer Software
  * Copyright 2018 by Wilfried Klaas
- * Project: schematic
- * File: NitriteStorageConfig.java
+ * Project: application
+ * File: RestDataModel.java
  * EMail: W.Klaas@gmx.de
- * Created: 14.01.2018 wklaa_000
+ * Created: 01.01.2018 wklaa_000
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,20 +19,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package de.mcs.microservice.application;
+package ${class.package}.client;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map;
 
 /**
  * @author wklaa_000
  *
  */
-public class NitriteStorageConfig {
+public interface RestDataModel {
 
-  @JsonProperty
-  public String storagePath;
-  @JsonProperty
-  public String user;
-  @JsonProperty
-  public String password;
+  String getModelName();
+
+  String getModuleName();
+
+  void setId(String id);
+
+  String getId();
+
+  Map<String, Object> any();
+
+  void set(String name, Object value);
 }

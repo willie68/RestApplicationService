@@ -27,6 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -43,15 +45,23 @@ import de.mcs.microservice.utils.JacksonUtils;
  *
  */
 public class DataModelGenerator {
+  private static final String PACKAGE_KEY = "package";
+
   enum OVERWRITE_MODE {
     overwrite, merge, none
   }
 
+  enum MODE {
+    server, client
+  }
+
   private ObjectMapper ymlMapper;
   private GeneratorUtility utility;
+  private MODE mode;
   private static File srcRootPath;
 
   public static void main(String[] args) throws Exception {
+    System.out.println("starting generator");
     File dataFile = new File("testdata"); // , "SchematicModel.yml");
     if (args.length > 0) {
       dataFile = new File(args[0]);
@@ -59,13 +69,23 @@ public class DataModelGenerator {
     if (!dataFile.exists()) {
       throw new FileNotFoundException(String.format("dataFile \"%s\" not found", dataFile.getAbsolutePath()));
     }
+    MODE mode = MODE.valueOf(args[1]);
+    if (!MODE.server.equals(mode)) {
+      throw new Exception("client model generation not implemented yet.");
 
+    }
     srcRootPath = new File("src/generated/java");
-    if (args.length > 1) {
-      srcRootPath = new File(args[1]);
+    if (args.length > 2) {
+      srcRootPath = new File(args[2]);
     }
     DataModelGenerator generator = new DataModelGenerator();
+    generator.setMode(mode);
     generator.start(dataFile);
+    System.out.println("generator finished");
+  }
+
+  private void setMode(MODE mode) {
+    this.mode = mode;
   }
 
   public DataModelGenerator() throws IOException {
@@ -93,18 +113,40 @@ public class DataModelGenerator {
     }
   }
 
-  public void processFile(File ymlFile, HashMap value) throws Exception {
-    // File templateFile = new File("src/main/resources/templates",
-    // String.format("%s.vm", value.get("type")));
-    // if (!templateFile.exists()) {
-    // throw new FileNotFoundException(String.format("templateFile \"%s\" not
-    // found", templateFile.getAbsolutePath()));
-    // }
-    // Template template = Velocity.getTemplate("templates/" +
-    // templateFile.getName());
+  public void processFile(File ymlFile, Map value) throws Exception {
+    String type = (String) value.get("type");
+    if (StringUtils.isEmpty(type)) {
+      throw new Exception("type should not be null or empty");
+    }
 
-    String templateName = String.format("%s.vm", value.get("type"));
-    Template template = Velocity.getTemplate("templates/" + templateName);
+    // checking for in-file datamodels
+    if (type.equals("Module")) {
+      Object object = value.get("datamodels");
+      if ((object != null) && (object instanceof List)) {
+        List<Map> datamodels = (List<Map>) object;
+        for (Map datamodel : datamodels) {
+          datamodel.put(PACKAGE_KEY, value.get(PACKAGE_KEY));
+          datamodel.put("moduleName", value.get("name"));
+          processFile(ymlFile, datamodel);
+        }
+      }
+    }
+
+    // checking for in-file datamodelhooks
+    if (type.equals("DataModel")) {
+      Object object = value.get("datamodelhooks");
+      if ((object != null) && (object instanceof Map)) {
+        Map datamodelhooks = (Map) object;
+        datamodelhooks.put(PACKAGE_KEY, value.get(PACKAGE_KEY));
+        datamodelhooks.put("moduleName", value.get("moduleName"));
+        datamodelhooks.put("modelName", value.get("name"));
+        processFile(ymlFile, datamodelhooks);
+        value.put("hooks", datamodelhooks.get("name"));
+      }
+    }
+
+    String templateName = String.format("%s.vm", type);
+    Template template = Velocity.getTemplate(String.format("templates/%s/%s", mode.name(), templateName));
 
     String modeStr = (String) value.getOrDefault("mode", "merge");
     OVERWRITE_MODE mode = OVERWRITE_MODE.valueOf(modeStr);
@@ -115,7 +157,7 @@ public class DataModelGenerator {
     context.put("class", value);
     context.put("utility", utility);
 
-    String packageStr = (String) value.get("package");
+    String packageStr = (String) value.get(PACKAGE_KEY);
     if (StringUtils.isEmpty(packageStr)) {
       throw new Exception(String.format("package must be given. File: \"%s\"", ymlFile.getName()));
     }
