@@ -351,8 +351,8 @@ public class DataModelResource {
         }
       }
 
-      DataStorage storage = RestApplicationService.getServerApi().initStorage(dataModelConfig.getDataStorage(),
-          context);
+      DataStorage<RestDataModel> storage = RestApplicationService.getServerApi()
+          .initStorage(dataModelConfig.getDataStorage(), context);
       blobDescription = storage.saveBlob(dbModel, fieldname, blobDescription, fileInputStream,
           blobDescription.getContentLength(), context);
       return Response.ok(blobDescription).status(201).build();
@@ -396,8 +396,8 @@ public class DataModelResource {
     }
 
     try {
-      DataStorage storage = RestApplicationService.getServerApi().initStorage(dataModelConfig.getDataStorage(),
-          context);
+      DataStorage<RestDataModel> storage = RestApplicationService.getServerApi()
+          .initStorage(dataModelConfig.getDataStorage(), context);
 
       if (storage.hasBlob(dbModel, fieldname, context)) {
         BlobDescription blobDescription = storage.getBlobDescription(dbModel, fieldname, context);
@@ -459,8 +459,8 @@ public class DataModelResource {
     }
 
     try {
-      DataStorage storage = RestApplicationService.getServerApi().initStorage(dataModelConfig.getDataStorage(),
-          context);
+      DataStorage<RestDataModel> storage = RestApplicationService.getServerApi()
+          .initStorage(dataModelConfig.getDataStorage(), context);
 
       if (storage.hasBlob(dbModel, fieldname, context)) {
         BlobDescription blobDescription = storage.getBlobDescription(dbModel, fieldname, context);
@@ -496,8 +496,8 @@ public class DataModelResource {
     }
 
     try {
-      DataStorage storage = RestApplicationService.getServerApi().initStorage(dataModelConfig.getDataStorage(),
-          context);
+      DataStorage<RestDataModel> storage = RestApplicationService.getServerApi()
+          .initStorage(dataModelConfig.getDataStorage(), context);
       if (!storage.hasBlob(dbModel, fieldname, context)) {
         throw new WebApplicationException("blob not found", Status.NOT_FOUND);
       }
