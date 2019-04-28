@@ -1,0 +1,9 @@
+type: Service
+mode: merge
+name: MyTestService
+configName: MyTestServiceConfig
+serviceName: MCSTestApplication
+description: this is the test application for testing the generator
+package: de.mcs.microservice.test
+vendor: MCS
+creationYear: 2019
