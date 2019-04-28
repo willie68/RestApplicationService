@@ -1,0 +1,61 @@
+type: Module
+mode: overwrite
+name: TestModule
+description: this is the main test module 
+package: de.mcs.microservice.test
+datamodels:
+  - type: DataModel
+    mode: overwrite
+    name: TestModel
+    description: this is the data model for the test app
+    datamodelhooks: 
+      type: DataModelHooks
+      mode: merge
+      name: TestModelHooks
+      description: this are the hooks for the data model for the test app
+    storage: de.mcs.microservice.application.storage.NitriteDataStorage 
+    hide: false
+    fields:
+      - name: testName
+        description: name of the data model
+        type: String
+        index: true
+        fulltext: true
+      - name: tags
+        description: tags
+        type: List<String>
+        index: true
+        fulltext: true
+      - name: file
+        description: the file object
+        type: BlobDescription
+        index: false
+        fulltext: false
+      - name: testDate
+        description:
+        type: Date
+        index: true
+        fulltext: false
+      - name: testBoolean
+        description: testing the boolean field type
+        type: boolean
+        index: true
+        fulltext: false
+  - type: DataModel
+    mode: overwrite
+    name: TestTags
+    description: tagging system
+    datamodelhooks: 
+    storage: de.mcs.microservice.application.storage.NitriteDataStorage
+    hide: false
+    fields:
+      - name: tag
+        description: name of tag
+        type: String
+        index: true
+        fulltext: false
+      - name: description
+        description: description of the tag
+        type: String
+        index: true
+        fulltext: true

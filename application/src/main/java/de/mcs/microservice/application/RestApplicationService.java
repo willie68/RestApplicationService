@@ -75,7 +75,7 @@ public abstract class RestApplicationService<T extends AppServiceConfig> extends
 
   private void scanAnnotationsAndBuildRestApplication() throws Error {
     log.info("scanning class path for application definition.");
-    AnnotationScanner scanner = new AnnotationScanner();
+    AnnotationScanner scanner = new AnnotationScanner(this.getClass().getPackageName());
     List<ApplicationConfig> installedApps = scanner.getInstalledApps();
     List<ModuleConfig> installedModules = scanner.getInstalledModules();
     List<DataModelConfig> installedDataModels = scanner.getInstalledDataModels();

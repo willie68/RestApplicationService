@@ -1,0 +1,7 @@
+type: ServiceConfig
+mode: merge
+name: MyTestServiceConfig
+description: this is the configuration class of the test service
+package: de.mcs.microservice.test
+vendor: MCS
+creationYear: 2019
