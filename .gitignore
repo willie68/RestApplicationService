@@ -1,7 +1,7 @@
 target
 bin
 data
-tmp
+**/tmp
 
 application/report\.html
 
